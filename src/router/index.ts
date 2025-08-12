@@ -3,7 +3,6 @@ import LoginView from "../views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import HomeView from "@/views/HomeView.vue";
 import ProjectConfigView from "@/views/ProjectConfigView.vue";
-import ProjectConfigViewDemo from "@/views/ProjectConfigViewDemo.vue";
 
 // 1. 定义路由规则（每个路由对应一个组件）
 const routes = [
@@ -28,9 +27,9 @@ const routes = [
         component: ProjectConfigView
     },
     {
-        path: '/project/demo',
-        name: 'ProjectDemo',
-        component: ProjectConfigViewDemo
+        path: '/project',
+        name: 'Project',
+        component: ProjectConfigView
     }
 ];
 

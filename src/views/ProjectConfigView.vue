@@ -24,7 +24,7 @@
             <!-- 项目配置 -->
             <t-table
                 class="project-table"
-                row-key="index"
+                row-key="project_code"
                 :data="project_data"
                 :columns="columns"
                 :stripe="stripe"
@@ -39,7 +39,7 @@
                 lazy-load
                 @row-click="handleRowClick"
             >
-              <template #cell:operation="row">
+              <template #cell:operation="{row}">
                 <div class="table-operation-buttons">
                   <t-button
                       class="edit_project_button"
@@ -70,23 +70,50 @@
   </div>
 </template>
 <script setup lang="ts">
-  import Sidebar from "@/components/Sidebar.vue";
-  import {ref} from "vue";
-  import type {TableProps} from "tdesign-vue-next";
+import Sidebar from "@/components/Sidebar.vue";
+import {h, ref} from "vue";
+import type {TableProps} from "tdesign-vue-next";
+import axios from "axios";
+import {API_URLS, BASE_URLS} from "@/api/urls.ts";
 
-  const project_data = ref([]);
+const request = axios.create({
+    baseURL: BASE_URLS,
+  })
+
+  interface project_data {
+    project_code: number;
+    project_name: string;
+    description: string;
+    project_type: string;
+    project_status: string;
+    start_date: string;
+    end_date: string;
+  }
+
+  // 项目列表初始化
+  const project_data = ref<project_data[]>([]);
+  // 总页数
+  const total = ref(0);
+  const status_map: Record<number, string> = {
+      0: '未开始',
+      1: '进行中',
+      2: '完成',
+      3: '暂停',
+      4: '终止'
+  }
+
   const stripe = ref(true);
   const bordered = ref(true);
   const hover = ref(false);
   const tableLayout = ref(false);
   const size = ref<TableProps['size']>('medium');
   const showHeader = ref(true);
-  const total = 28;
+
   const columns = ref<TableProps['columns']>([
     {
-      colKey: 'project_id',
-      title: '项目编号',
-      width: '100',
+      colKey: 'project_code',
+      title: '项目编码',
+
     },
     {
       colKey: 'project_name',
@@ -94,32 +121,76 @@
       width: '100',
     },
     {
-      colKey: 'project_cvm',
-      title: '所属服务器',
+      colKey: 'description',
+      title: '项目描述',
     },
     {
-      colKey: 'project_create_time',
-      title: '项目创建时间',
+      colKey: 'project_type',
+      title: '项目类型',
       ellipsis: true,
     },
     {
-      colKey: 'project_comment',
-      title: '备注',
+      colKey: 'project_status',
+      title: '项目状态',
     },
     {
-      colKey: 'operation', // 仅保留列定义，不写cell配置（用插槽替代）
+      colKey: 'start_date',
+      title: '项目开始日期',
+    },
+    {
+      colKey: 'end_date',
+      title: '项目结束时间',
+    },
+    {
+      colKey: 'operation',
       title: '操作',
       width: 120,
-      foot: '-',
-      // 如需固定到右侧，直接写死或定义fixedRightColumn变量
-      fixed: 'right', // 简化：直接固定到右侧，或改为 fixedRightColumn ? 'right' : undefined（需先定义fixedRightColumn）
+      cell: ({ row }: any) => {
+        return h('div', { class: 'table-operation-buttons' }, [
+          h('button', {
+            class: 'edit_project_button t-button t-button--size-s t-button--variant-text',
+            onClick: () => handleRowClick(row)
+          }, '编辑'),
+          h('button', {
+            class: 'delete_project_button t-button t-button--size-s t-button--variant-text',
+            onClick: () => handleRowClick(row)
+          }, '删除')
+        ])
+      }
     },
   ]);
-  const pagination: TableProps['pagination'] = {
+
+  const pagination = ref<TableProps['pagination']>({
     defaultCurrent: 1,
     defaultPageSize: 5,
-    total,
-  };
+    total: total.value,
+  });
+
+  request.get(API_URLS.projects.get_projects_list)
+    .then((res) => {
+      if (res.status === 200 && res.data.code === "success") {
+        project_data.value = res.data.data.map((item: any) => {
+          return {
+            ...item,
+            project_code: item.code,
+            project_name: item.name,
+            description: item.description,
+            project_type: item.type,
+            project_status: status_map[item.status],
+            start_date: item.start_date,
+            end_date: item.end_date,
+          }
+        });
+        total.value = project_data.value.length;
+        // 更新分页显示总数据
+        // ts 要求处理可能出现的 undefined 问题
+        if (pagination.value) {
+          pagination.value.total = total.value;
+        }
+        console.log( project_data.value);
+      }
+    })
+
   const handleRowClick: TableProps['onRowClick'] = (e) => {
     console.log(e);
   };
@@ -188,5 +259,8 @@
     overflow: hidden;
   }
 
-
+  .table-operation-buttons {
+    display: flex;
+    gap: 8px;
+  }
 </style>
