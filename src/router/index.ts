@@ -26,11 +26,6 @@ const routes = [
         name: 'Project',
         component: ProjectConfigView
     },
-    {
-        path: '/project',
-        name: 'Project',
-        component: ProjectConfigView
-    }
 ];
 
 // 2. 创建路由实例

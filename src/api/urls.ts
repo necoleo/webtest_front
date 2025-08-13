@@ -5,6 +5,7 @@ interface ApiUrls{
     },
     projects: {
         get_projects_list: string;
+        delete_project: string;
     }
 }
 
@@ -15,6 +16,7 @@ export const API_URLS: ApiUrls = {
     },
     projects: {
         get_projects_list: 'api/project/show',
+        delete_project: 'api/project/delete',
     },
 }
 

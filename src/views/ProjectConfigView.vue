@@ -39,27 +39,42 @@
                 lazy-load
                 @row-click="handleRowClick"
             >
-              <template #cell:operation="{row}">
+              <template #operation="{ row }">
                 <div class="table-operation-buttons">
-                  <t-button
+                  <t-link
                       class="edit_project_button"
-                      size="small"
-                      variant="text"
-                      @click="handleRowClick(row)"
+                      theme="primary"
+                      hover="color"
                   >
                     编辑
-                  </t-button>
-                  <t-button
+                  </t-link>
+                  <t-link
                       class="delete_project_button"
-                      size="small"
-                      variant="text"
-                      @click="handleRowClick(row)"
+                      theme="primary"
+                      hover="color"
+                      @click="handleDeleteProject(row)"
                   >
                     删除
-                  </t-button>
+                  </t-link>
                 </div>
               </template>
             </t-table>
+          </div>
+          <div class="delete_dialog">
+            <t-dialog
+                v-model:visible="delete_dialog_visible"
+                header="删除确认"
+                width="25%"
+                :confirm-on-enter="true"
+                :on-cancel="onCancel"
+                :on-esc-keydown="onEscKeydown"
+                :on-close-btn-click="onCloseBtnClick"
+                :on-overlay-click="onOverlayClick"
+                :on-close="close"
+                :on-confirm="onConfirmAnother"
+            >
+              <p> 是否确认删除该项目,此操作不可撤销 </p>
+            </t-dialog>
           </div>
         </t-content>
         <div class="footer-content">
@@ -71,8 +86,9 @@
 </template>
 <script setup lang="ts">
 import Sidebar from "@/components/Sidebar.vue";
-import {h, ref} from "vue";
+import {ref} from "vue";
 import type {TableProps} from "tdesign-vue-next";
+import { MessagePlugin} from 'tdesign-vue-next';
 import axios from "axios";
 import {API_URLS, BASE_URLS} from "@/api/urls.ts";
 
@@ -145,18 +161,6 @@ const request = axios.create({
       colKey: 'operation',
       title: '操作',
       width: 120,
-      cell: ({ row }: any) => {
-        return h('div', { class: 'table-operation-buttons' }, [
-          h('button', {
-            class: 'edit_project_button t-button t-button--size-s t-button--variant-text',
-            onClick: () => handleRowClick(row)
-          }, '编辑'),
-          h('button', {
-            class: 'delete_project_button t-button t-button--size-s t-button--variant-text',
-            onClick: () => handleRowClick(row)
-          }, '删除')
-        ])
-      }
     },
   ]);
 
@@ -166,30 +170,86 @@ const request = axios.create({
     total: total.value,
   });
 
-  request.get(API_URLS.projects.get_projects_list)
-    .then((res) => {
-      if (res.status === 200 && res.data.code === "success") {
-        project_data.value = res.data.data.map((item: any) => {
-          return {
-            ...item,
-            project_code: item.code,
-            project_name: item.name,
-            description: item.description,
-            project_type: item.type,
-            project_status: status_map[item.status],
-            start_date: item.start_date,
-            end_date: item.end_date,
+  const refreshProjectList = async () => {
+    request.get(API_URLS.projects.get_projects_list)
+        .then((res) => {
+          if (res.status === 200 && res.data.code === "success") {
+            project_data.value = res.data.data.map((item: any) => {
+              return {
+                ...item,
+                project_code: item.code,
+                project_name: item.name,
+                description: item.description,
+                project_type: item.type,
+                project_status: status_map[item.status],
+                start_date: item.start_date,
+                end_date: item.end_date,
+              }
+            });
+            total.value = project_data.value.length;
+            // 更新分页显示总数据
+            // ts 要求处理可能出现的 undefined 问题
+            if (pagination.value) {
+              pagination.value.total = total.value;
+            }
           }
-        });
-        total.value = project_data.value.length;
-        // 更新分页显示总数据
-        // ts 要求处理可能出现的 undefined 问题
-        if (pagination.value) {
-          pagination.value.total = total.value;
-        }
-        console.log( project_data.value);
-      }
-    })
+        })
+  }
+
+  refreshProjectList()
+  // 点击删除
+  const delete_dialog_visible = ref(false);
+  const target_project = ref<number | null>(null)
+  const handleDeleteProject = (row: project_data) => {
+    target_project.value = row.project_code;
+    if (!target_project){
+      MessagePlugin.error("项目不存在")
+    }
+    delete_dialog_visible.value = true;
+  }
+
+  const onCancel = () => {
+    delete_dialog_visible.value = false;
+  }
+
+  const onEscKeydown = () => {
+    delete_dialog_visible.value = false;
+  }
+
+  const onCloseBtnClick = () => {
+    delete_dialog_visible.value = false;
+  }
+
+  const onOverlayClick = () => {
+    delete_dialog_visible.value = false;
+  }
+
+  const close = () => {
+    target_project.value = null;
+  }
+
+  const onConfirmAnother = () => {
+    console.log(target_project.value);
+    if (!target_project){
+      MessagePlugin.error("项目不存在")
+    }
+    try{
+      request.post(API_URLS.projects.delete_project, {"project_code": target_project.value})
+          .then((res) => {
+            if (res.status === 200 && res.data.code === "success") {
+              MessagePlugin.success("删除成功")
+              delete_dialog_visible.value = false;
+              refreshProjectList()
+            }
+            else {
+              MessagePlugin.error("删除失败: ${res.data.data}")
+            }
+          })
+    }
+    catch (e) {
+      MessagePlugin.error("删除失败: ${e.message}")
+    }
+  }
 
   const handleRowClick: TableProps['onRowClick'] = (e) => {
     console.log(e);
