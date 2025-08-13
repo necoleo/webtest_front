@@ -89,12 +89,8 @@ import Sidebar from "@/components/Sidebar.vue";
 import {ref} from "vue";
 import type {TableProps} from "tdesign-vue-next";
 import { MessagePlugin} from 'tdesign-vue-next';
-import axios from "axios";
-import {API_URLS, BASE_URLS} from "@/api/urls.ts";
-
-const request = axios.create({
-    baseURL: BASE_URLS,
-  })
+import {API_URLS} from "@/api/urls.ts";
+import {request} from "@/api/urls.ts";
 
   interface project_data {
     project_code: number;
@@ -322,5 +318,19 @@ const request = axios.create({
   .table-operation-buttons {
     display: flex;
     gap: 8px;
+  }
+
+  .t-button--variant-outline.t-button--theme-primary {
+    border-color: #3a8c9e;
+    color: #3a8c9e;
+  }
+
+  .t-link--theme-primary {
+    color: #3a8c9e;
+  }
+
+  :deep(.t-button--variant-base.t-button--theme-primary) {
+    background-color: #3a8c9e;
+    border-color: #3a8c9e;
   }
 </style>

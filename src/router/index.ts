@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import LoginView from "../views/LoginView.vue";
 import RegisterView from "@/views/RegisterView.vue";
 import HomeView from "@/views/HomeView.vue";
-import ProjectConfigView from "@/views/ProjectConfigView.vue";
+import ProjectManageView from "@/views/ProjectManageView.vue";
 
 // 1. 定义路由规则（每个路由对应一个组件）
 const routes = [
@@ -24,7 +24,7 @@ const routes = [
     {
         path: '/project',
         name: 'Project',
-        component: ProjectConfigView
+        component: ProjectManageView
     },
 ];
 

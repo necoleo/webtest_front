@@ -134,7 +134,16 @@
           is_loading.value = false;
           if (response.data.code === "success") {
             MessagePlugin.success('登录成功');
-            router.push({name: 'Home'});
+            
+            // 检查是否有重定向参数
+            const redirect = router.currentRoute.value.query.redirect as string;
+            if (redirect) {
+              // 重定向到之前访问的页面
+              router.push(redirect);
+            } else {
+              // 默认跳转到首页
+              router.push({name: 'Home'});
+            }
           }
         }
       }).catch((error) => {
