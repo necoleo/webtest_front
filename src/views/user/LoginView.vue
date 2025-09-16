@@ -5,7 +5,7 @@
       <div class="left-illustration-wrapper">
         <img
             class="login-left-illustration"
-            src="@/assets/login/login_left_illustration.png"
+            src="../../assets/login/login_left_illustration.png"
             alt="login_illustration"
         />
       </div>
@@ -17,7 +17,7 @@
       <div class="background-blur">
         <img
             class="background-image"
-            src="@/assets/login/login_right_background.png"
+            src="../../assets/login/login_right_background.png"
             alt="login_background"
         />
       </div>
@@ -36,6 +36,9 @@
         <t-form
             class="login-form"
             labelAlign="top"
+            :data = "login_form_data"
+            :rules="rules"
+            @submit="submit_login_form"
         >
           <t-form-item
               label="用户名"
@@ -44,6 +47,7 @@
             <t-input
                 class="login-input"
                 placeholder="请输入用户名"
+                v-model="login_form_data.username"
                 clearable
                 size="large"
                 autofocus
@@ -61,6 +65,7 @@
             <t-input
                 class="login-input"
                 placeholder="请输入密码"
+                v-model="login_form_data.password"
                 clearable
                 size="large"
                 type="password"
@@ -72,7 +77,12 @@
           </t-form-item>
 
           <t-form-item class="login-button">
-            <t-button>
+            <t-button
+                theme="primary"
+                type="submit"
+                block
+                :loading="login_button_loading"
+            >
               登录
             </t-button>
           </t-form-item>
@@ -83,7 +93,10 @@
             </t-link>
             <div class="register-section">
               <span class="register-text">未注册? </span>
-              <t-link theme="primary">
+              <t-link
+                  theme="primary"
+                  @click="to_register_view"
+              >
                 注册账户
               </t-link>
             </div>
@@ -95,6 +108,79 @@
 </template>
 
 <script setup lang="ts">
+
+  import {type FormProps, MessagePlugin} from "tdesign-vue-next";
+  import {reactive, ref} from "vue";
+  import {request} from "@/api/urls.ts";
+  import {API_URLS} from "@/api/urls.ts";
+  import router from "@/router";
+
+  const login_button_loading = ref(false);
+  const login_form_data: FormProps['data'] = reactive({
+    username: '',
+    password: '',
+  });
+
+  const rules: FormProps['rules'] = {
+    username: [
+      {
+        required: true,
+        message: "用户名必填",
+        type: "error",
+      }
+    ],
+    password: [
+      {
+        required: true,
+        message: "密码必填",
+        type: "error",
+      }
+    ]
+  }
+
+  if (localStorage.getItem("register_username") && localStorage.getItem("register_password")) {
+    login_form_data.username = localStorage.getItem("register_username");
+    login_form_data.password = localStorage.getItem("register_password");
+    localStorage.clear()
+  }
+
+
+  const submit_login_form: FormProps['onSubmit'] = ({ validateResult, firstError }) => {
+    login_button_loading.value = true;
+    if (validateResult === true) {
+      try{
+        request.post(API_URLS.users.user_login, {
+          "username": login_form_data.username,
+          "password": login_form_data.password,
+        }).then((response) => {
+          if (response.status === 200 && response.data.code === "success") {
+            MessagePlugin.success("登录成功");
+
+            // 获取重定向路径参数
+            router.push({
+              name: "Project"
+            });
+          }
+          else {
+            MessagePlugin.error(response.data.message);
+          }
+        })
+      }catch(error) {
+        MessagePlugin.error("登录失败: ${error.message}");
+      }
+    } else {
+      MessagePlugin.warning(firstError ?? "表单校验失败，请检查输入");
+    }
+    login_button_loading.value = false;
+  }
+
+
+  const to_register_view = () => {
+    router.push({
+      name: "Register",
+    })
+  }
+
 </script>
 
 <style scoped>
@@ -212,6 +298,10 @@
   :deep(.t-input.t-size-l){
     border-radius: 12px;
     min-height: 50px;
+  }
+
+  :deep(.t-is-error .t-input__extra){
+    text-align: left;
   }
 
   .login-button{
