@@ -10,18 +10,34 @@ interface ApiUrls{
     projects: {
         get_projects_list: string;
         delete_project: string;
+    },
+    requirements_document: {
+        upload: string;
+    },
+    api_document: {
+        upload: string;
+        list: string;
+        delete: string;
     }
 }
 
 export const API_URLS: ApiUrls = {
     users: {
-        user_login: '/api/user/login',
-        user_register: '/api/user/register',
+        user_login: 'api/user/login/',
+        user_register: 'api/user/register',
     },
     projects: {
         get_projects_list: 'api/project/show',
         delete_project: 'api/project/delete',
     },
+    requirements_document: {
+        upload: 'api/requirements_document/upload',
+    },
+    api_document: {
+        upload: 'api/api_document/upload/',
+        list: 'api/api_document/list/',
+        delete: 'api/api_document/delete/'
+    }
 }
 
 export const BASE_URLS = "http://localhost:8000";

@@ -153,7 +153,8 @@
           "username": login_form_data.username,
           "password": login_form_data.password,
         }).then((response) => {
-          if (response.status === 200 && response.data.code === "success") {
+          console.log(response);
+          if (response.status === 200 && response.data.code === "000000") {
             MessagePlugin.success("登录成功");
 
             // 获取重定向路径参数
