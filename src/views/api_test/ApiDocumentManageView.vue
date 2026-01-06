@@ -8,30 +8,31 @@
         </div>
       </t-aside>
       <t-layout>
-        <t-content>
-          <!-- 顶部导航栏 -->
-          <t-header>
-            <t-head-menu>
-              <div class="header-menu">
-                <h2>接口管理</h2>
-                <div class="header-menu-operations">
-                  <t-button
-                      variant="text"
-                      shape="square"
-                  >
-                    <template #icon>
-                      <t-icon name="user"/>
-                    </template>
-                  </t-button>
-                </div>
+        <!-- 顶部导航栏 -->
+        <t-header>
+          <t-head-menu>
+            <div class="header-menu">
+              <h2>接口管理</h2>
+              <div class="header-menu-operations">
+                <t-button
+                    variant="text"
+                    shape="square"
+                >
+                  <template #icon>
+                    <t-icon name="user"/>
+                  </template>
+                </t-button>
               </div>
-            </t-head-menu>
-          </t-header>
+            </div>
+          </t-head-menu>
+        </t-header>
+        <t-content>
           <div class="current_page_path">
             <span> 接口测试 / 接口管理</span>
           </div>
           <!-- 主要内容 -->
           <div class="main-content">
+            <!-- 筛选栏 -->
             <div class="filter-actions-container">
               <t-input
                   class="search-input"
@@ -161,9 +162,9 @@
           </div>
 
         </t-content>
-        <div class="footer-content">
-          <t-footer> Heypon AI 测试</t-footer>
-        </div>
+        <t-footer>
+          Heypon AI 测试
+        </t-footer>
       </t-layout>
     </t-layout>
   </div>
@@ -217,6 +218,10 @@ const pagination = ref<TableProps['pagination']>({
   current: 1,
   pageSize: 10,
   total: total.value,
+  onChange: (pageInfo) => {
+    pagination.value!.current = pageInfo.current;
+    pagination.value!.pageSize = pageInfo.pageSize;
+  }
 });
 
 const columns = ref<TableProps['columns']>([
@@ -377,6 +382,11 @@ const handle_download_api_document = (row: api_document_data) => {
   background-color: #f0f0f0;
 }
 
+/* 布局相关 */
+:deep(.t-layout .t-layout){
+  height: 100%;
+}
+
 :deep(.t-layout__sider){
   height: 100%;
   width: 300px;
@@ -384,15 +394,19 @@ const handle_download_api_document = (row: api_document_data) => {
   margin-right: 20px;
 }
 
-:deep(.t-layout__content){
-  border-radius: 20px;
-  overflow: hidden;
-}
-
 :deep(.t-layout__header){
   border-radius: 20px;
   overflow: hidden;
   height: 60px;
+}
+
+:deep(.t-layout__content){
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  border-radius: 20px;
+  overflow: hidden;
+  min-height: 0;
 }
 
 :deep(.t-head-menu){
@@ -414,11 +428,6 @@ const handle_download_api_document = (row: api_document_data) => {
   padding: 10px;
 }
 
-:deep(.t-layout__content){
-  display: flex;
-  flex-direction: column;
-}
-
 .main-content{
   display: flex;
   flex-direction: column;
@@ -426,6 +435,7 @@ const handle_download_api_document = (row: api_document_data) => {
   border-radius: 24px;
   overflow: hidden;
   margin-top: 10px;
+  min-height: 0;
 }
 
 /* 筛选操作栏 */
@@ -484,17 +494,30 @@ const handle_download_api_document = (row: api_document_data) => {
   width: 25%;
   height: 40px;
 }
-/* 测试用例表单样式 */
+/* 接口文档表单样式 */
 .api_document_table_container{
   display: flex;
+  flex-direction: column;
   flex: 1;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: auto;
   min-height: 0;
 }
 
+:deep(.t-table) {
+  display: flex;
+  flex-direction: column;
+  height: 800px;
+  min-height: 0;
+}
+
+:deep(.t-table__header){
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
 :deep(.t-table__content){
-  padding: 20px;
+  padding: 0 20px 20px 20px;
 }
 
 :deep(.t-table thead td, .t-table th){

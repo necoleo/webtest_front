@@ -107,11 +107,29 @@
     return null
   }
 
+  // 根据当前子菜单找到其对应的父菜单
+  const find_menu_item_parent = (current_item: string, items: menu_item[]): string | null => {
+    for (const item of items){
+      if (item.children){
+        for (const child of item.children){
+          if (child.key === current_item){
+            return item.key
+          }
+        }
+      }
+    }
+    return null;
+  }
+
   // 根据当前路由设置激活菜单
   if (current_route.path){
     const current_active_menu = find_menu_item_by_path(current_route.path, props.menu_items)?.key
     if (current_active_menu) {
       active_menu.value = current_active_menu
+      const parent_key =  find_menu_item_parent(active_menu.value, props.menu_items)
+      if (parent_key){
+        expanded_menus.value = [parent_key]
+      }
     }
   }
 
