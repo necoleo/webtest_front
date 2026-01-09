@@ -18,6 +18,7 @@ interface ApiUrls{
         upload: string;
         list: string;
         delete: string;
+        parse: string;
     }
 }
 
@@ -36,7 +37,8 @@ export const API_URLS: ApiUrls = {
     api_document: {
         upload: 'api/api_document/upload/',
         list: 'api/api_document/list/',
-        delete: 'api/api_document/delete/'
+        delete: 'api/api_document/delete/',
+        parse: 'api/api_document/parse/',
     }
 }
 

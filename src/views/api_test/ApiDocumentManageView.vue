@@ -140,6 +140,15 @@
                 <template #operation="{ row }">
                   <div class="table-operation-buttons">
                     <t-link
+                        v-if="!row.is_parsed"
+                        class="edit_api_document_button"
+                        theme="primary"
+                        hover="color"
+                        @click="handle_parse_api_document(row)"
+                    >
+                      解析
+                    </t-link>
+                    <t-link
                         class="edit_api_document_button"
                         theme="primary"
                         hover="color"
@@ -173,10 +182,10 @@
 <script setup lang="ts">
 import Sidebar from "@/components/Sidebar.vue";
 import {default_menu} from "@/config/sidebar_menus";
-import {ref} from "vue";
 import {request} from "@/api/urls.ts";
 import {MessagePlugin, type TableProps} from "tdesign-vue-next";
 import {API_URLS} from "@/api/urls.ts";
+import {ref} from "vue";
 
 interface api_document_data {
   api_document_id: number;
@@ -186,6 +195,7 @@ interface api_document_data {
   cos_access_url: string;
   file_size: number;
   comment: string;
+  is_parsed: boolean;
   created_user: string;
   created_at: string;
   updated_at: string;
@@ -287,6 +297,7 @@ const refresh_api_document_list = async () => {
               cos_access_url: item.cos_access_url,
               file_size: item.file_size,
               comment: item.comment,
+              is_parsed: item.is_parsed,
               created_user: item.created_user,
               created_at: item.created_at,
               updated_at: item.updated_at,
@@ -365,6 +376,28 @@ const handle_download_api_document = (row: api_document_data) => {
   } catch (e) {
     MessagePlugin.error('打开链接失败');
   }
+}
+
+// 解析接口文档
+const handle_parse_api_document = (row: api_document_data) => {
+  const api_document_id = row.api_document_id
+  if (!api_document_id) {
+    MessagePlugin.error('未找到该id的接口文档');
+    return;
+  }
+  request.post(API_URLS.api_document.parse, { api_document_id: api_document_id })
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000") {
+        MessagePlugin.success(`成功导入 ${res.data.data.count} 个接口`);
+        refresh_api_document_list();
+      }
+      else {
+        MessagePlugin.error(`解析失败: ${res.data.message}`);
+      }
+    })
+      .catch((e) => {
+        MessagePlugin.error(`解析失败: ${e.response.data.message}`);
+      });
 }
 
 </script>
