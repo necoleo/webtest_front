@@ -106,6 +106,7 @@
                   class="add_project_button"
                   theme="primary"
                   variant="outline"
+                  @click="show_upload_dialog = true"
               >
                 新增接口文档
               </t-button>
@@ -159,7 +160,8 @@
                         class="delete_api_document_button"
                         theme="primary"
                         hover="color"
-                        @click="handle_delete_project(row)"
+                        :disabled="loading_row.has(row.api_document_id)"
+                        @click="handle_delete_api_document(row)"
                     >
                       删除
                     </t-link>
@@ -168,6 +170,10 @@
               </t-table>
 
             </div>
+            <upload-api-document-dialog
+                v-model:visible="show_upload_dialog"
+                @success="refresh_api_document_list"
+            ></upload-api-document-dialog>
           </div>
 
         </t-content>
@@ -186,7 +192,9 @@ import {request} from "@/api/urls.ts";
 import {MessagePlugin, type TableProps} from "tdesign-vue-next";
 import {API_URLS} from "@/api/urls.ts";
 import {ref} from "vue";
+import UploadApiDocumentDialog from "@/views/api_test/components/UploadApiDocumentDialog.vue";
 
+// 接口文档参数
 interface api_document_data {
   api_document_id: number;
   project_id: number;
@@ -234,6 +242,13 @@ const pagination = ref<TableProps['pagination']>({
   }
 });
 
+// 存储正在操作的行 id
+const loading_row = ref<Set<number>>(new Set());
+
+// 上传接口文档的弹窗
+const show_upload_dialog = ref<boolean>(false)
+
+// 列表行
 const columns = ref<TableProps['columns']>([
   {
     colKey: 'api_document_id',
@@ -270,7 +285,6 @@ const columns = ref<TableProps['columns']>([
   {
     colKey: 'operation',
     title: '操作',
-    width: 120,
   },
 ]);
 
@@ -314,6 +328,7 @@ const refresh_api_document_list = async () => {
       })
 }
 
+// 进来先刷新列表
 refresh_api_document_list()
 
 // 搜索接口文档
@@ -381,6 +396,7 @@ const handle_download_api_document = (row: api_document_data) => {
 // 解析接口文档
 const handle_parse_api_document = (row: api_document_data) => {
   const api_document_id = row.api_document_id
+  loading_row.value.add(api_document_id)
   if (!api_document_id) {
     MessagePlugin.error('未找到该id的接口文档');
     return;
@@ -397,8 +413,39 @@ const handle_parse_api_document = (row: api_document_data) => {
     })
       .catch((e) => {
         MessagePlugin.error(`解析失败: ${e.response.data.message}`);
+      })
+      .finally(() => {
+        loading_row.value.delete(api_document_id);
       });
 }
+
+// 删除接口文档
+const handle_delete_api_document = (row: api_document_data) => {
+  const api_document_id = row.api_document_id
+  loading_row.value.add(api_document_id)
+  if (!api_document_id) {
+    MessagePlugin.error('未找到该id的接口文档');
+    return ;
+  }
+  request.post(API_URLS.api_document.delete, { api_document_id: api_document_id })
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000") {
+          MessagePlugin.success(`删除接口文档`);
+          refresh_api_document_list();
+        }
+        else {
+          MessagePlugin.error(`删除失败: ${res.data.message}`);
+        }
+      })
+      .catch((e) => {
+        MessagePlugin.error(`删除失败: ${e.response.data.message}`);
+      })
+      .finally(() => {
+        loading_row.value.delete(api_document_id);
+      });
+}
+
+
 
 </script>
 
@@ -557,5 +604,8 @@ const handle_parse_api_document = (row: api_document_data) => {
   font-size: 16px;
 }
 
-
+/* 操作栏按钮 */
+:deep(.t-link--theme-primary){
+  padding-right: 5px;
+}
 </style>
