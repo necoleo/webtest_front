@@ -26,12 +26,12 @@ export const default_menu: menu_item[] = [
         children: [
             {
                 key: 'api-test-management',
-                title: '接口管理',
+                title: '接口文档',
                 path: '/api-document',
             },
             {
                 key: 'api-test-cases',
-                title: '接口用例',
+                title: '接口管理',
                 path: '',
             },
             {

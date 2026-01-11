@@ -19,6 +19,7 @@ interface ApiUrls{
         list: string;
         delete: string;
         parse: string;
+        update: string;
     }
 }
 
@@ -39,6 +40,7 @@ export const API_URLS: ApiUrls = {
         list: 'api/api_document/list/',
         delete: 'api/api_document/delete/',
         parse: 'api/api_document/parse/',
+        update: 'api/api_document/update/',
     }
 }
 

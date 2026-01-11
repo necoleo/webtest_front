@@ -145,6 +145,7 @@
                         class="edit_api_document_button"
                         theme="primary"
                         hover="color"
+                        :disabled="loading_row.has(row.api_document_id)"
                         @click="handle_parse_api_document(row)"
                     >
                       解析
@@ -153,6 +154,7 @@
                         class="edit_api_document_button"
                         theme="primary"
                         hover="color"
+                        @click="handle_update_api_document(row)"
                     >
                       编辑
                     </t-link>
@@ -174,6 +176,11 @@
                 v-model:visible="show_upload_dialog"
                 @success="refresh_api_document_list"
             ></upload-api-document-dialog>
+            <upate-api-document-dialog
+                v-model:visible="show_update_dialog"
+                :api_document_data="updated_api_document_data"
+                @success="refresh_api_document_list"
+            ></upate-api-document-dialog>
           </div>
 
         </t-content>
@@ -193,6 +200,7 @@ import {MessagePlugin, type TableProps} from "tdesign-vue-next";
 import {API_URLS} from "@/api/urls.ts";
 import {ref} from "vue";
 import UploadApiDocumentDialog from "@/views/api_test/components/UploadApiDocumentDialog.vue";
+import UpateApiDocumentDialog from "@/views/api_test/components/UpateApiDocumentDialog.vue";
 
 // 接口文档参数
 interface api_document_data {
@@ -247,6 +255,11 @@ const loading_row = ref<Set<number>>(new Set());
 
 // 上传接口文档的弹窗
 const show_upload_dialog = ref<boolean>(false)
+
+// 编辑接口文档的弹窗
+const show_update_dialog = ref<boolean>(false)
+// 选中的接口文档
+const updated_api_document_data = ref<api_document_data | null>(null)
 
 // 列表行
 const columns = ref<TableProps['columns']>([
@@ -417,6 +430,13 @@ const handle_parse_api_document = (row: api_document_data) => {
       .finally(() => {
         loading_row.value.delete(api_document_id);
       });
+}
+
+
+// 编辑接口文档
+const handle_update_api_document = (row: api_document_data) => {
+  show_update_dialog.value = true
+  updated_api_document_data.value = row
 }
 
 // 删除接口文档
