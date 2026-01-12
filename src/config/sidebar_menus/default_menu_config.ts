@@ -3,138 +3,98 @@ import type {menu_item} from "@/config/sidebar_menus/index.ts";
 
 export const default_menu: menu_item[] = [
     {
-        key: 'functional-test',
-        title: '功能测试',
-        icon: 'check-rectangle',
+        key: 'project-management',
+        title: '项目管理',
+        icon: 'folder',
         children: [
             {
-                key: 'functional-test-pm',
-                title: '项目管理',
+                key: 'project-list',
+                title: '项目列表',
                 path: '/project',
-            },
-            {
-                key: 'functional-test-cases',
-                title: '测试用例',
-                path: '/cases-manage',
             }
         ]
     },
     {
-        key: 'api-test',
-        title: '接口测试',
+        key: 'requirement-management',
+        title: '需求文档管理',
+        icon: 'document',
+        children: [
+            {
+                key: 'requirement-doc-list',
+                title: '需求文档列表',
+                path: '/requirements/documents',
+            },
+            {
+                key: 'requirement-list',
+                title: '需求项管理',
+                path: '',
+            },
+            {
+                key: 'requirement-relations',
+                title: '需求关联分析',
+                path: '',
+            }
+        ]
+    },
+    {
+        key: 'api-document-management',
+        title: '接口文档管理',
         icon: 'api',
         children: [
             {
-                key: 'api-test-management',
-                title: '接口文档',
+                key: 'api-document-list',
+                title: '接口文档列表',
                 path: '/api-document',
             },
             {
-                key: 'api-test-cases',
+                key: 'api-interface-list',
                 title: '接口管理',
                 path: '',
+            }
+        ]
+    },
+    {
+        key: 'test-case-management',
+        title: '测试用例管理',
+        icon: 'check-rectangle',
+        children: [
+            {
+                key: 'test-case-list',
+                title: '测试用例列表',
+                path: '/cases-manage',
             },
             {
-                key: 'api-test-data-config',
-                title: '数据配置',
+                key: 'ai-generate-cases',
+                title: 'AI生成测试用例',
                 path: '',
             },
             {
-                key: 'api-test-execution',
-                title: '用例执行',
+                key: 'case-requirement-link',
+                title: '用例关联需求',
                 path: '',
             },
             {
-                key: 'api-test-reports',
-                title: '测试报告',
+                key: 'case-api-link',
+                title: '用例关联接口',
                 path: '',
             }
         ]
     },
     {
-        key: 'web-auto-test',
-        title: 'web 自动化测试',
-        icon: 'logo-chrome',
+        key: 'system-settings',
+        title: '系统设置',
+        icon: 'setting',
         children: [
             {
-                key: 'web-auto-test-cases',
-                title: '自动化用例管理',
+                key: 'project-config',
+                title: '项目配置',
                 path: '',
             },
             {
-                key: 'web-auto-test-scripts',
-                title: '脚本库',
-                path: '',
-            },
-            {
-                key: 'web-auto-test-plans',
-                title: '执行计划',
-                path: '',
-            },
-            {
-                key: 'web-auto-test-reports',
-                title: '自动化测试报告',
-                path: '',
-            }
-        ]
-    },
-    {
-        key: 'app-auto-test',
-        title: 'APP 自动化测试',
-        icon: 'application',
-        children: [
-            {
-                key: 'app-auto-test-equipment-pool',
-                title: '设备池管理',
-                path: '',
-            },
-            {
-                key: 'app-auto-test-config',
-                title: '自动化环境配置',
-                path: '',
-            },
-            {
-                key: 'app-auto-test-cases',
-                title: 'App 自动化用例',
-                path: '',
-            },
-            {
-                key: 'app-auto-test-log',
-                title: '执行日志',
-                path: '',
-            },
-            {
-                key: 'app-auto-test-reports',
-                title: 'App 测试报告',
-                path: '',
-            },
-        ]
-    },
-    {
-        key: 'project-config',
-        title: '项目配置',
-        icon: 'dashboard',
-        children: [
-            {
-                key: 'project-config-info',
-                title: '项目信息设置',
-                path: '',
-            },
-            {
-                key: 'project-config-permissions',
+                key: 'permission-config',
                 title: '权限设置',
                 path: '',
-            },
-            {
-                key: 'project-config-plans',
-                title: '流程配置',
-                path: '',
-            },
-            {
-                key: 'project-config-SOC',
-                title: '系统集成配置',
-                path: '',
-            },
+            }
         ]
     }
 ]

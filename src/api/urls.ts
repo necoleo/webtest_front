@@ -7,9 +7,11 @@ interface ApiUrls{
         user_login: string;
         user_register: string;
     },
-    projects: {
-        get_projects_list: string;
-        delete_project: string;
+    project: {
+        list: string;
+        delete: string;
+        update: string;
+        create: string;
     },
     requirements_document: {
         upload: string;
@@ -28,9 +30,11 @@ export const API_URLS: ApiUrls = {
         user_login: 'api/user/login/',
         user_register: 'api/user/register',
     },
-    projects: {
-        get_projects_list: 'api/project/show',
-        delete_project: 'api/project/delete',
+    project: {
+        create: 'api/project/create/',
+        update: 'api/project/update/',
+        delete: 'api/project/delete/',
+        list:   'api/project/list/',
     },
     requirements_document: {
         upload: 'api/requirements_document/upload',

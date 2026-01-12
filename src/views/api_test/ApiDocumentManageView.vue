@@ -103,7 +103,7 @@
                 重置
               </t-button>
               <t-button
-                  class="add_project_button"
+                  class="add_api_document_button"
                   theme="primary"
                   variant="outline"
                   @click="show_upload_dialog = true"
@@ -589,7 +589,7 @@ const handle_delete_api_document = (row: api_document_data) => {
   gap: 3px;
 }
 
-.add_project_button {
+.add_api_document_button {
   border-radius: 12px;
   width: 25%;
   height: 40px;

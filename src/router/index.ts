@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from "@/views/HomeView.vue";
 import RegisterView from "@/views/user/RegisterView.vue";
 import CasesManageView from "@/views/project/CasesManageView.vue";
-import ProjectDemoView from "@/views/project/ProjectDemoView.vue";
+import ProjectDemoView from "@/views/project/ProjectManageView.vue";
 import LoginView from "@/views/user/LoginView.vue";
 import ApiDocumentManageView from "@/views/api_test/ApiDocumentManageView.vue";
 

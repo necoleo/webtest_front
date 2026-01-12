@@ -4,16 +4,36 @@
       <!-- 侧边栏区域 -->
       <t-aside>
         <div class="sidebar-section">
-          <!-- 引入侧边栏 -->
           <Sidebar :menu_items="default_menu"/>
         </div>
       </t-aside>
       <t-layout>
-        <t-content>
-          <div class="main-content">
-            <div class="table-header">
+        <!-- 顶部导航栏 -->
+        <t-header>
+          <t-head-menu>
+            <div class="header-menu">
               <h2> 项目管理 </h2>
-              <div class="header-actions">
+              <div class="header-menu-operations">
+                <t-button
+                    variant="text"
+                    shape="square"
+                >
+                  <template #icon>
+                    <t-icon name="user"/>
+                  </template>
+                </t-button>
+              </div>
+            </div>
+          </t-head-menu>
+        </t-header>
+        <t-content>
+          <div class="current_page_path">
+            <span> 功能测试 / 项目管理</span>
+          </div>
+          <!-- 主要内容 -->
+          <div class="main-content">
+            <!-- 筛选栏 -->
+            <div class="filter-actions-container">
                 <t-input
                     class="search-input"
                     v-model="search_key_word"
@@ -69,135 +89,139 @@
                 </t-button>
 
               </div>
+            <div class="project-table-container">
+              <t-table
+                  class="project-table"
+                  row-key="project_code"
+                  :data="project_data"
+                  :columns="columns"
+                  :stripe="false"
+                  :bordered="false"
+                  :hover="hover"
+                  :table-layout="tableLayout ? 'auto' : 'fixed'"
+                  :size="size"
+                  :pagination="pagination"
+                  :show-header="showHeader"
+                  cell-empty-content="-"
+                  resizable
+                  lazy-load
+              >
+                <template #requirement_document="{ row }">
+                  <t-link theme="primary"
+                          hover="color"
+                          @click="handleDownloadRequirementDoc(row)"
+                          :disabled="!row.requirement_document_url"
+                  >
+                    {{ row.requirement_document_name }}
+                  </t-link>
+                </template>
+                <template #operation="{ row }">
+                  <div class="table-operation-buttons">
+                    <t-link
+                        class="edit_project_button"
+                        theme="primary"
+                        hover="color"
+                    >
+                      编辑
+                    </t-link>
+                    <t-link
+                        class="delete_project_button"
+                        theme="primary"
+                        hover="color"
+                        @click="handleDeleteProject(row)"
+                    >
+                      删除
+                    </t-link>
+                  </div>
+                </template>
+              </t-table>
             </div>
-            <!-- 项目配置 -->
-            <t-table
-                class="project-table"
-                row-key="project_code"
-                :data="project_data"
-                :columns="columns"
-                :bordered=false
-                :hover="hover"
-                :table-layout="tableLayout ? 'auto' : 'fixed'"
-                :size="size"
-                :pagination="pagination"
-                :show-header="showHeader"
-                cell-empty-content="-"
-                resizable
-                lazy-load
-                @row-click="handleRowClick"
-            >
-              <template #requirement_document="{ row }">
-                <t-link theme="primary" hover="color" @click="handleDownloadRequirementDoc(row)"
-                        :disabled="!row.requirement_document_url">
-                  {{ row.requirement_document_name }}
-                </t-link>
-              </template>
-              <template #operation="{ row }">
-                <div class="table-operation-buttons">
-                  <t-link
-                      class="edit_project_button"
-                      theme="primary"
-                      hover="color"
-                  >
-                    编辑
-                  </t-link>
-                  <t-link
-                      class="delete_project_button"
-                      theme="primary"
-                      hover="color"
-                      @click="handleDeleteProject(row)"
-                  >
-                    删除
-                  </t-link>
-                </div>
-              </template>
-            </t-table>
-          </div>
-          <div class="delete_dialog">
-            <t-dialog
-                v-model:visible="delete_dialog_visible"
-                header="删除确认"
-                width="25%"
-                :confirm-on-enter="true"
-                :on-cancel="onCancel"
-                :on-esc-keydown="onEscKeydown"
-                :on-close-btn-click="onCloseBtnClick"
-                :on-overlay-click="onOverlayClick"
-                :on-close="close"
-                :on-confirm="onConfirmAnother"
-            >
-              <p> 是否确认删除该项目,此操作不可撤销 </p>
-            </t-dialog>
+            <div class="delete_dialog">
+              <t-dialog
+                  v-model:visible="delete_dialog_visible"
+                  header="删除确认"
+                  width="25%"
+                  :confirm-on-enter="true"
+                  :on-cancel="onCancel"
+                  :on-esc-keydown="onEscKeydown"
+                  :on-close-btn-click="onCloseBtnClick"
+                  :on-overlay-click="onOverlayClick"
+                  :on-close="close"
+                  :on-confirm="onConfirmAnother"
+              >
+                <p> 是否确认删除该项目,此操作不可撤销 </p>
+              </t-dialog>
+            </div>
+            <div class="upload-file-dialog">
+              <t-dialog
+                  v-model:visible="upload_file_dialog_visible"
+                  header="上传需求文档"
+                  width="25%"
+                  :loading = "upload_dialog_loading"
+                  :confirm-on-enter="true"
+                  :on-cancel="onCancel"
+                  :on-esc-keydown="onEscKeydown"
+                  :on-close-btn-click="onCloseBtnClick"
+                  :on-overlay-click="onOverlayClick"
+                  :on-close="close"
+                  :on-confirm="handleClickUploadConfirmButton"
+              >
+                <t-select
+                    class="project-selection"
+                    v-model="project_filter_selection"
+                    :options="project_filter_options"
+                    label="项目"
+                    placeholder="请选择项目"
+                    clearable
+                    @blur="handleBlurProjectSelect"
+                />
+                <t-upload
+                    ref="upload_file_ref"
+                    v-model="uploaded_files"
+                    :with-credentials="true"
+                    :data="{ project_code: project_filter_selection }"
+                    :action="BASE_URLS + '/' + API_URLS.requirements_document.upload"
+                    draggable
+                    theme="custom"
+                    :auto-upload="false"
+                    @fail="handle_upload_file_fail"
+                    @success="handle_upload_file_success"
+                    @progress="handle_upload_progress"
+                >
+                  <template #dragContent="params">
+                    <ul v-if="uploaded_files && uploaded_files.length" style="padding: 0">
+                      <li v-for="file in uploaded_files" :key="file.name" style="list-style-type: none">{{ file.name }}</li>
+                    </ul>
+                    <template v-else>
+                      <p v-if="params && params.dragActive">释放鼠标</p>
+                      <t-button v-else-if="uploaded_files.length < 1">自定义拖拽区域</t-button>
+                    </template>
+                    <t-button v-if="uploaded_files && uploaded_files.length" size="small" style="margin-top: 36px">更换文件</t-button>
+                    <!-- <span>数据状态：{{params}}</span> -->
+                  </template>
+                </t-upload>
+              </t-dialog>
+            </div>
           </div>
 
-          <div class="upload-file-dialog">
-            <t-dialog
-                v-model:visible="upload_file_dialog_visible"
-                header="上传需求文档"
-                width="25%"
-                :loading = "upload_dialog_loading"
-                :confirm-on-enter="true"
-                :on-cancel="onCancel"
-                :on-esc-keydown="onEscKeydown"
-                :on-close-btn-click="onCloseBtnClick"
-                :on-overlay-click="onOverlayClick"
-                :on-close="close"
-                :on-confirm="handleClickUploadConfirmButton"
-            >
-              <t-select
-                  class="project-selection"
-                  v-model="project_filter_selection"
-                  :options="project_filter_options"
-                  label="项目"
-                  placeholder="请选择项目"
-                  clearable
-                  @blur="handleBlurProjectSelect"
-              />
-              <t-upload
-                  ref="upload_file_ref"
-                  v-model="uploaded_files"
-                  :with-credentials="true"
-                  :data="{ project_code: project_filter_selection }"
-                  :action="BASE_URLS + '/' + API_URLS.requirements_document.upload"
-                  draggable
-                  theme="custom"
-                  :auto-upload="false"
-                  @fail="handle_upload_file_fail"
-                  @success="handle_upload_file_success"
-                  @progress="handle_upload_progress"
-              >
-                <template #dragContent="params">
-                  <ul v-if="uploaded_files && uploaded_files.length" style="padding: 0">
-                    <li v-for="file in uploaded_files" :key="file.name" style="list-style-type: none">{{ file.name }}</li>
-                  </ul>
-                  <template v-else>
-                    <p v-if="params && params.dragActive">释放鼠标</p>
-                    <t-button v-else-if="uploaded_files.length < 1">自定义拖拽区域</t-button>
-                  </template>
-                  <t-button v-if="uploaded_files && uploaded_files.length" size="small" style="margin-top: 36px">更换文件</t-button>
-                  <!-- <span>数据状态：{{params}}</span> -->
-                </template>
-              </t-upload>
-            </t-dialog>
-          </div>
         </t-content>
-        <div class="footer-content">
-          <t-footer> Heypon AI 测试</t-footer>
-        </div>
+        <t-footer>
+          Heypon AI 测试
+        </t-footer>
       </t-layout>
     </t-layout>
   </div>
 </template>
+
 <script setup lang="ts">
-import Sidebar from "@/components/Sidebar.vue";
-import {computed, ref} from "vue";
-import type {TableProps, UploadInstanceFunctions} from "tdesign-vue-next";
-import { MessagePlugin} from 'tdesign-vue-next';
-import {API_URLS, BASE_URLS} from "@/api/urls.ts";
-import {request} from "@/api/urls.ts";
-import { UploadIcon } from 'tdesign-icons-vue-next'
-import {default_menu} from "@/config/sidebar_menus";
+  import Sidebar from "@/components/Sidebar.vue";
+  import {default_menu} from "@/config/sidebar_menus";
+  import {API_URLS, BASE_URLS} from "@/api/urls.ts";
+  import {computed, ref} from "vue";
+  import type {TableProps, UploadInstanceFunctions} from "tdesign-vue-next";
+  import { MessagePlugin} from 'tdesign-vue-next';
+  import {request} from "@/api/urls.ts";
+  import { UploadIcon } from 'tdesign-icons-vue-next'
 
   interface project_data {
     project_code: number;
@@ -216,11 +240,11 @@ import {default_menu} from "@/config/sidebar_menus";
   // 总页数
   const total = ref(0);
   const status_map: Record<number, string> = {
-      0: '未开始',
-      1: '进行中',
-      2: '完成',
-      3: '暂停',
-      4: '终止'
+    0: '未开始',
+    1: '进行中',
+    2: '完成',
+    3: '暂停',
+    4: '终止'
   }
 
   // 项目状态下拉框初始化
@@ -253,8 +277,8 @@ import {default_menu} from "@/config/sidebar_menus";
   const search_key_word = ref("")
 
   const hover = ref(false);
+  const size = ref<TableProps['size']>('large');
   const tableLayout = ref(false);
-  const size = ref<TableProps['size']>('medium');
   const showHeader = ref(true);
 
   const columns = ref<TableProps['columns']>([
@@ -495,80 +519,106 @@ import {default_menu} from "@/config/sidebar_menus";
 </script>
 
 <style scoped>
-  .project-container {
-    position: relative;
-    display: flex;
-    width: 100%;
+  .project-container{
     height: 100vh;
-    min-height: 796px;
-    overflow: hidden;
   }
 
-  .sidebar-content {
-    flex: 1;
+  .sidebar-section{
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+    background-color: #f0f0f0;
+  }
+
+  /* 布局相关 */
+  :deep(.t-layout .t-layout){
     height: 100%;
   }
 
-  :deep(.t-layout__sider) {
+  :deep(.t-layout__sider){
     height: 100%;
     width: 300px;
     border-radius: 20px;
-    overflow: hidden;
-    margin-right: 10px;
+    margin-right: 20px;
   }
 
-  .main-content {
+  :deep(.t-layout__header){
     border-radius: 20px;
-    width: 100%;
     overflow: hidden;
-    box-sizing: border-box;
-    padding: 20px;
-    background-color: white;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+    height: 60px;
   }
 
-  .table-header {
+  :deep(.t-layout__content){
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
+    flex: 1;
+    border-radius: 20px;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  :deep(.t-head-menu){
+    height: 100%;
+  }
+
+  .header-menu{
+    display: flex;
+    justify-content:  space-between;
     align-items: center;
-    margin-bottom: 16px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid rgba(119, 182, 202, 0.2);
+    width: 100%;
+    border-radius: 20px;
+    padding: 20px;
   }
 
-  .table-header h2 {
-    margin: 0;
-    color: #3a8c9e;
-    font-weight: 600;
-  }
-
-  .header-actions {
+  .current_page_path{
     display: flex;
-    gap: 20px;
+    font-size: 18px;
+    padding: 10px;
   }
 
-  .search-input {
+  .main-content{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    border-radius: 24px;
+    overflow: hidden;
+    margin-top: 10px;
+    min-height: 0;
+  }
+
+  /* 筛选操作栏 */
+  .filter-actions-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+    background-color: #FFF;
+    gap: 20px;
+    padding: 0 20px;
+  }
+
+  .search-input{
     width: 50%;
   }
 
   :deep(.search-input .t-input) {
-    border-color: #3a8c9e;
     border-radius: 12px;
+    height: 40px;
   }
 
-  .status-filter {
+  .status-filter{
     width: 25%;
   }
 
   :deep(.t-input.t-is-readonly .t-input__inner) {
     width: 25%;
-    color: #3a8c9e;
   }
 
   :deep(.status-filter .t-input) {
     border-radius: 12px;
-    border-color: #3a8c9e;
     transition: all 0.25s ease;
+    height: 40px;
   }
 
   /* 搜索、重置、上传按钮  */
@@ -576,15 +626,10 @@ import {default_menu} from "@/config/sidebar_menus";
   .reset-search-button,
   .upload-file-button {
     border-radius: 12px;
-    border: 2px solid #8dbfd1;
-    color: #8dbfd1;
     font-weight: 500;
     transition: all 0.3s ease;
     padding: 0 16px;
-  }
-
-  .upload-file-button{
-    width: 25%;
+    height: 40px;
   }
 
   :deep(.upload-file-button .t-button__text) {
@@ -593,63 +638,43 @@ import {default_menu} from "@/config/sidebar_menus";
     gap: 3px;
   }
 
-  .search-button:hover,
-  .reset-search-button:hover,
-  .upload-file-button:hover {
-    background: #8dbfd1;
-    color: white;
-    transform: translateY(-1.5px);
-    box-shadow: 0 5px 15px rgba(141, 191, 209, 0.3);
-  }
   .add_project_button {
     border-radius: 12px;
-    background: linear-gradient(135deg, #8dbfd1 0%, #7ad6e8 100%);
-    border: none;
     width: 25%;
+    height: 40px;
   }
-
-  :deep(.add_project_button .t-button__text) {
-    color: white;
-  }
-
-  .add_project_button:hover {
-    transform: translateY(-1.5px);
-    box-shadow: 0 5px 15px rgba(141, 191, 209, 0.3);
-    background: linear-gradient(135deg, #7db2c5 0%, #62bfd4 100%);
-  }
-
-  .t-layout__content{
+  /* 接口文档表单样式 */
+  .api_document_table_container{
     display: flex;
     flex-direction: column;
-    width: 100%;
-    padding: 20px;
-    box-sizing: border-box;
+    flex: 1;
+    overflow: auto;
+    min-height: 0;
   }
 
-  .main-content {
-    border-radius: 20px;
-    width: 100%;
-    overflow: hidden;
-  }
-
-  .table-operation-buttons {
+  :deep(.t-table) {
     display: flex;
-    gap: 8px;
+    flex-direction: column;
+    height: 800px;
+    min-height: 0;
   }
 
-  .t-link--theme-primary {
-    color: #3a8c9e;
+  :deep(.t-table__header){
+    position: sticky;
+    top: 0;
+    z-index: 10;
   }
 
-  :deep(.project-selection .t-input.t-is-readonly){
-    color: #3a8c9e;
-    border-radius: 12px;
-    border-color: #3a8c9e;
+  :deep(.t-table__content){
+    padding: 0 20px 20px 20px;
   }
 
-  :deep(.dialog-upload-file-button .t-button--variant-outline){
-    color: #3a8c9e;
-    border-radius: 12px;
+  :deep(.t-table thead td, .t-table th){
+    font-size: 16px;
   }
 
+  /* 操作栏按钮 */
+  :deep(.t-link--theme-primary){
+    padding-right: 5px;
+  }
 </style>
