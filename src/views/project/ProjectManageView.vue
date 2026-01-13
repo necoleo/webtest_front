@@ -28,7 +28,7 @@
         </t-header>
         <t-content>
           <div class="current_page_path">
-            <span> 功能测试 / 项目管理</span>
+            <span>项目管理 / 项目列表</span>
           </div>
           <!-- 主要内容 -->
           <div class="main-content">
@@ -72,18 +72,10 @@
                   重置
                 </t-button>
                 <t-button
-                    class="upload-file-button"
-                    type="primary"
-                    variant="outline"
-                    @click="handleUploadFileButton"
-                >
-                  <UploadIcon />
-                  上传需求文档
-                </t-button>
-                <t-button
                     class="add_project_button"
                     theme="primary"
                     variant="outline"
+                    @click="show_create_project_dialog=true"
                 >
                   新增项目
                 </t-button>
@@ -92,7 +84,7 @@
             <div class="project-table-container">
               <t-table
                   class="project-table"
-                  row-key="project_code"
+                  row-key="project_id"
                   :data="project_data"
                   :columns="columns"
                   :stripe="false"
@@ -106,21 +98,14 @@
                   resizable
                   lazy-load
               >
-                <template #requirement_document="{ row }">
-                  <t-link theme="primary"
-                          hover="color"
-                          @click="handleDownloadRequirementDoc(row)"
-                          :disabled="!row.requirement_document_url"
-                  >
-                    {{ row.requirement_document_name }}
-                  </t-link>
-                </template>
                 <template #operation="{ row }">
                   <div class="table-operation-buttons">
                     <t-link
                         class="edit_project_button"
                         theme="primary"
                         hover="color"
+                        :disabled="loading_row.has(row.project_id)"
+                        @click="handle_update_project(row)"
                     >
                       编辑
                     </t-link>
@@ -128,7 +113,8 @@
                         class="delete_project_button"
                         theme="primary"
                         hover="color"
-                        @click="handleDeleteProject(row)"
+                        :disabled="loading_row.has(row.project_id)"
+                        @click="handle_delete_project(row)"
                     >
                       删除
                     </t-link>
@@ -136,72 +122,15 @@
                 </template>
               </t-table>
             </div>
-            <div class="delete_dialog">
-              <t-dialog
-                  v-model:visible="delete_dialog_visible"
-                  header="删除确认"
-                  width="25%"
-                  :confirm-on-enter="true"
-                  :on-cancel="onCancel"
-                  :on-esc-keydown="onEscKeydown"
-                  :on-close-btn-click="onCloseBtnClick"
-                  :on-overlay-click="onOverlayClick"
-                  :on-close="close"
-                  :on-confirm="onConfirmAnother"
-              >
-                <p> 是否确认删除该项目,此操作不可撤销 </p>
-              </t-dialog>
-            </div>
-            <div class="upload-file-dialog">
-              <t-dialog
-                  v-model:visible="upload_file_dialog_visible"
-                  header="上传需求文档"
-                  width="25%"
-                  :loading = "upload_dialog_loading"
-                  :confirm-on-enter="true"
-                  :on-cancel="onCancel"
-                  :on-esc-keydown="onEscKeydown"
-                  :on-close-btn-click="onCloseBtnClick"
-                  :on-overlay-click="onOverlayClick"
-                  :on-close="close"
-                  :on-confirm="handleClickUploadConfirmButton"
-              >
-                <t-select
-                    class="project-selection"
-                    v-model="project_filter_selection"
-                    :options="project_filter_options"
-                    label="项目"
-                    placeholder="请选择项目"
-                    clearable
-                    @blur="handleBlurProjectSelect"
-                />
-                <t-upload
-                    ref="upload_file_ref"
-                    v-model="uploaded_files"
-                    :with-credentials="true"
-                    :data="{ project_code: project_filter_selection }"
-                    :action="BASE_URLS + '/' + API_URLS.requirements_document.upload"
-                    draggable
-                    theme="custom"
-                    :auto-upload="false"
-                    @fail="handle_upload_file_fail"
-                    @success="handle_upload_file_success"
-                    @progress="handle_upload_progress"
-                >
-                  <template #dragContent="params">
-                    <ul v-if="uploaded_files && uploaded_files.length" style="padding: 0">
-                      <li v-for="file in uploaded_files" :key="file.name" style="list-style-type: none">{{ file.name }}</li>
-                    </ul>
-                    <template v-else>
-                      <p v-if="params && params.dragActive">释放鼠标</p>
-                      <t-button v-else-if="uploaded_files.length < 1">自定义拖拽区域</t-button>
-                    </template>
-                    <t-button v-if="uploaded_files && uploaded_files.length" size="small" style="margin-top: 36px">更换文件</t-button>
-                    <!-- <span>数据状态：{{params}}</span> -->
-                  </template>
-                </t-upload>
-              </t-dialog>
-            </div>
+            <create-project-dialog
+                v-model:visible="show_create_project_dialog"
+                @success="refresh_project_list"
+            ></create-project-dialog>
+            <update-project-dialog
+                v-model:visible="show_update_project_dialog"
+                :project_data="updated_project_data"
+                @success="refresh_project_list"
+            ></update-project-dialog>
           </div>
 
         </t-content>
@@ -216,23 +145,22 @@
 <script setup lang="ts">
   import Sidebar from "@/components/Sidebar.vue";
   import {default_menu} from "@/config/sidebar_menus";
-  import {API_URLS, BASE_URLS} from "@/api/urls.ts";
-  import {computed, ref} from "vue";
-  import type {TableProps, UploadInstanceFunctions} from "tdesign-vue-next";
-  import { MessagePlugin} from 'tdesign-vue-next';
+  import {API_URLS} from "@/api/urls.ts";
+  import {ref} from "vue";
+  import type {TableProps} from "tdesign-vue-next";
+  import { MessagePlugin,DialogPlugin} from 'tdesign-vue-next';
   import {request} from "@/api/urls.ts";
-  import { UploadIcon } from 'tdesign-icons-vue-next'
+  import CreateProjectDialog from "@/views/project/components/CreateProjectDialog.vue";
+  import UpdateProjectDialog from "@/views/project/components/UpdateProjectDialog.vue";
 
   interface project_data {
-    project_code: number;
+    project_id: number;
     project_name: string;
     description: string;
     project_type: string;
-    project_status: string;
+    project_status: number;
     start_date: string;
     end_date: string;
-    requirement_document_name: string | null;
-    requirement_document_url?: string | null;
   }
 
   // 项目列表初始化
@@ -246,6 +174,16 @@
     3: '暂停',
     4: '终止'
   }
+  // 存储正在操作的行 id
+  const loading_row = ref<Set<number>>(new Set());
+
+  // 新建项目弹窗
+  const show_create_project_dialog = ref<boolean>(false);
+
+  // 编辑项目弹窗
+  const show_update_project_dialog = ref<boolean>(false)
+  // 选中的项目
+  const updated_project_data = ref<project_data | null>(null)
 
   // 项目状态下拉框初始化
   const status_filter_selection = ref("")
@@ -270,7 +208,7 @@
     {
       label: "终止",
       value: 4
-    },
+    }
   ]
 
   // 搜索框关键字
@@ -283,7 +221,7 @@
 
   const columns = ref<TableProps['columns']>([
     {
-      colKey: 'project_code',
+      colKey: 'project_id',
       title: '项目编码',
 
     },
@@ -302,7 +240,7 @@
       ellipsis: true,
     },
     {
-      colKey: 'project_status',
+      colKey: 'project_status_text',
       title: '项目状态',
     },
     {
@@ -312,10 +250,6 @@
     {
       colKey: 'end_date',
       title: '项目结束时间',
-    },
-    {
-      colKey: 'requirement_document',
-      title: '需求文档',
     },
     {
       colKey: 'operation',
@@ -331,18 +265,19 @@
   });
 
   // 刷新项目列表
-  const refreshProjectList = async () => {
-    request.get(API_URLS.projects.get_projects_list)
+  const refresh_project_list = async () => {
+    request.get(API_URLS.project.list)
         .then((res) => {
-          if (res.status === 200 && res.data.code === "success") {
-            project_data.value = res.data.data.projects_list.map((item: any) => {
+          if (res.status === 200 && res.data.code === "000000") {
+            project_data.value = res.data.data.results.map((item: any) => {
               return {
                 ...item,
-                project_code: item.code,
-                project_name: item.name,
+                project_id: item.id,
+                project_name: item.project_name,
                 description: item.description,
-                project_type: item.type,
-                project_status: status_map[item.status],
+                project_type: item.project_type,
+                project_status: item.project_status,
+                project_status_text: status_map[item.project_status],
                 start_date: item.start_date,
                 end_date: item.end_date,
                 requirement_document_name: item.requirement_name,
@@ -363,68 +298,7 @@
 
   }
 
-  refreshProjectList()
-
-  // 项目下拉框初始化
-  const project_filter_selection = ref<number | null>(null)
-  // 项目下拉框选项
-  const project_filter_options = computed(() => {
-    return project_data.value.map((item: any) => ({
-      label: item.project_name,
-      value: item.project_code,
-    }))
-  })
-  // 处理项目选择框失焦事件
-  const handleBlurProjectSelect = () => {
-    if (project_filter_selection.value == null) {
-      MessagePlugin.error("项目为必选项")
-    }
-  }
-  // 已上传的文件
-  const uploaded_files = ref<any[]>([])
-  // 显示上传进度
-  const upload_process = ref(0)
-
-  // 处理上传需求文档失败
-  const handle_upload_file_fail = (context: any) => {
-    const { file, response } = context || {}
-    MessagePlugin.error(response?.message || `上传失败${file?.name ? `：${file.name}` : ''}`)
-    upload_dialog_loading.value = false
-  }
-
-  //处理上传需求文档成功
-  const handle_upload_file_success = (context: any) => {
-    const { file, response } = context
-    MessagePlugin.success(response?.message || `上传成功${file?.name ? `：${file.name}` : ''}`)
-    upload_dialog_loading.value = false
-  }
-
-  // 处理上传进度
-  const handle_upload_progress = (context: any) => {
-    const { percent }= context || {}
-    upload_process.value = Math.round(percent || 0)
-  }
-
-  const upload_file_ref = ref<UploadInstanceFunctions>()
-  const upload_dialog_loading = ref(false)
-  // 点击确认上传需求文档
-  const handleClickUploadConfirmButton = () => {
-    upload_dialog_loading.value = true
-    if (!project_filter_selection.value) {
-      MessagePlugin.error('请选择项目');
-      upload_dialog_loading.value = false
-      return;
-    }
-    if (!uploaded_files.value.length) {
-      MessagePlugin.error('请先选择文件');
-      upload_dialog_loading.value = false
-      return;
-    }
-    // 上传文件和project_code
-    if (upload_file_ref.value){
-      upload_file_ref.value?.uploadFiles()
-    }
-  }
+  refresh_project_list()
 
   // 点击搜索按钮
   const handleClickSearchButton = () => {
@@ -438,35 +312,58 @@
     handleClickSearchButton()
   }
 
-  // 点击上传需求文档
-  const upload_file_dialog_visible = ref(false);
-  const handleUploadFileButton = () => {
-    upload_file_dialog_visible.value = true;
+  // 点击编辑项目
+  const handle_update_project = (row: project_data) => {
+    show_update_project_dialog.value = true
+    console.log(row)
+    updated_project_data.value = row
   }
 
-  // 点击删除
-  const delete_dialog_visible = ref(false);
-  const target_project = ref<number | null>(null)
-  const handleDeleteProject = (row: project_data) => {
-    target_project.value = row.project_code;
-    if (!target_project){
+
+  // 点击删除项目
+  const handle_delete_project = (row: project_data) => {
+    const project_id = row.project_id;
+    loading_row.value.add(project_id)
+    if (!project_id){
       MessagePlugin.error("项目不存在")
+      return ;
     }
-    delete_dialog_visible.value = true;
-  }
-
-  // 下载需求文档
-  const handleDownloadRequirementDoc = (row: project_data) => {
-    const url = row.requirement_document_url;
-    if (!url) {
-      MessagePlugin.error('该项目暂无需求文档');
-      return;
-    }
-    try {
-      window.open(url, '_blank');
-    } catch (e) {
-      MessagePlugin.error('打开链接失败');
-    }
+    //二次确认弹窗
+    const confirm_dialog = DialogPlugin.confirm({
+      header: '确认删除',
+      body: `确定要删除接口文档「${row.project_name}」吗？`,
+      confirmBtn: '删除',
+      cancelBtn: '取消',
+      theme: 'warning',
+      onConfirm: ({ e }) => {
+        loading_row.value.add(project_id)
+        request.post(API_URLS.project.delete, { project_id: project_id })
+            .then((res) => {
+              if (res.status === 200 && res.data.code === "000000") {
+                MessagePlugin.success(`删除项目成功`);
+                refresh_project_list();
+              }
+              else {
+                MessagePlugin.error(`删除失败: ${res.data.message}`);
+              }
+            })
+            .catch((e) => {
+              MessagePlugin.error(`删除失败: ${e.response.data.message}`);
+            })
+            .finally(() => {
+              loading_row.value.delete(project_id);
+              confirm_dialog.destroy();
+            });
+      },
+      onClose: ({ e, trigger }) => {
+        loading_row.value.delete(project_id);
+        confirm_dialog.destroy();
+      },
+      onCancel: ({ e, trigger }) => {
+        loading_row.value.delete(project_id);
+        confirm_dialog.destroy();
+      }
+    });
   }
 
   const onCancel = () => {
@@ -496,12 +393,12 @@
       MessagePlugin.error("项目不存在")
     }
     try{
-      request.post(API_URLS.projects.delete_project, {"project_code": target_project.value})
+      request.post(API_URLS.project.delete, {"project_id": target_project.value})
           .then((res) => {
-            if (res.status === 200 && res.data.code === "success") {
+            if (res.status === 200 && res.data.code === "00000") {
               MessagePlugin.success("删除成功")
               delete_dialog_visible.value = false;
-              refreshProjectList()
+              refresh_project_list()
             }
             else {
               MessagePlugin.error("删除失败: ${res.data.data}")
@@ -512,10 +409,7 @@
       MessagePlugin.error("删除失败: ${e.message}")
     }
   }
-
-  const handleRowClick: TableProps['onRowClick'] = (e) => {
-    console.log(e);
-  };
+  
 </script>
 
 <style scoped>
@@ -643,8 +537,8 @@
     width: 25%;
     height: 40px;
   }
-  /* 接口文档表单样式 */
-  .api_document_table_container{
+  /* 项目表单样式 */
+  .project-table-container{
     display: flex;
     flex-direction: column;
     flex: 1;

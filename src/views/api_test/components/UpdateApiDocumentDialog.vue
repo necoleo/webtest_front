@@ -187,7 +187,7 @@ const handle_confirm = async () => {
 
 // 获取项目列表（弹窗打开时调用)
 const fetch_project_lists = async () => {
-  request.get(API_URLS.projects.get_projects_list)
+  request.get(API_URLS.project.list)
       .then((res) => {
         if (res.status === 200 && res.data.code === "000000") {
           project_options.value = res.data.data.results.map((item: any) => ({

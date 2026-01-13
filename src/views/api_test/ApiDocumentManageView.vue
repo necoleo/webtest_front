@@ -176,11 +176,11 @@
                 v-model:visible="show_upload_dialog"
                 @success="refresh_api_document_list"
             ></upload-api-document-dialog>
-            <upate-api-document-dialog
+            <update-api-document-dialog
                 v-model:visible="show_update_dialog"
                 :api_document_data="updated_api_document_data"
                 @success="refresh_api_document_list"
-            ></upate-api-document-dialog>
+            ></update-api-document-dialog>
           </div>
 
         </t-content>
@@ -196,11 +196,11 @@
 import Sidebar from "@/components/Sidebar.vue";
 import {default_menu} from "@/config/sidebar_menus";
 import {request} from "@/api/urls.ts";
-import {MessagePlugin, type TableProps} from "tdesign-vue-next";
+import {MessagePlugin, type TableProps, DialogPlugin} from "tdesign-vue-next";
 import {API_URLS} from "@/api/urls.ts";
 import {ref} from "vue";
 import UploadApiDocumentDialog from "@/views/api_test/components/UploadApiDocumentDialog.vue";
-import UpateApiDocumentDialog from "@/views/api_test/components/UpateApiDocumentDialog.vue";
+import UpdateApiDocumentDialog from "@/views/api_test/components/UpdateApiDocumentDialog.vue";
 
 // 接口文档参数
 interface api_document_data {
@@ -396,7 +396,7 @@ const handle_click_search_button = () => {
 const handle_download_api_document = (row: api_document_data) => {
   const url = row.cos_access_url;
   if (!url) {
-    MessagePlugin.error('该项目暂无需求文档');
+    MessagePlugin.error('该需求文档暂无访问链接');
     return;
   }
   try {
@@ -447,22 +447,43 @@ const handle_delete_api_document = (row: api_document_data) => {
     MessagePlugin.error('未找到该id的接口文档');
     return ;
   }
-  request.post(API_URLS.api_document.delete, { api_document_id: api_document_id })
-      .then((res) => {
-        if (res.status === 200 && res.data.code === "000000") {
-          MessagePlugin.success(`删除接口文档`);
-          refresh_api_document_list();
-        }
-        else {
-          MessagePlugin.error(`删除失败: ${res.data.message}`);
-        }
-      })
-      .catch((e) => {
-        MessagePlugin.error(`删除失败: ${e.response.data.message}`);
-      })
-      .finally(() => {
-        loading_row.value.delete(api_document_id);
-      });
+
+  //二次确认弹窗
+  const confirm_dialog = DialogPlugin.confirm({
+    header: '确认删除',
+    body: `确定要删除接口文档「${row.api_document_title}」吗？`,
+    confirmBtn: '删除',
+    cancelBtn: '取消',
+    theme: 'warning',
+    onConfirm: ({ e }) => {
+      loading_row.value.add(api_document_id)
+      request.post(API_URLS.api_document.delete, { api_document_id: api_document_id })
+          .then((res) => {
+            if (res.status === 200 && res.data.code === "000000") {
+              MessagePlugin.success(`删除接口文档`);
+              refresh_api_document_list();
+            }
+            else {
+              MessagePlugin.error(`删除失败: ${res.data.message}`);
+            }
+          })
+          .catch((e) => {
+            MessagePlugin.error(`删除失败: ${e.response.data.message}`);
+          })
+          .finally(() => {
+            loading_row.value.delete(api_document_id);
+            confirm_dialog.destroy();
+          });
+    },
+    onClose: ({ e, trigger }) => {
+      loading_row.value.delete(api_document_id);
+      confirm_dialog.destroy();
+    },
+    onCancel: ({ e, trigger }) => {
+      loading_row.value.delete(api_document_id);
+      confirm_dialog.destroy();
+    }
+  });
 }
 
 
