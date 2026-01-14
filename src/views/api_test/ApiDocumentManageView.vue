@@ -307,6 +307,7 @@ const handle_click_reset_button = () => {
   search_api_document_title.value = "";
   search_project_id.value = undefined;
   search_version.value = "";
+  handle_click_search_button()
 }
 
 // 刷新接口文档列表
@@ -455,7 +456,7 @@ const handle_delete_api_document = (row: api_document_data) => {
     confirmBtn: '删除',
     cancelBtn: '取消',
     theme: 'warning',
-    onConfirm: ({ e }) => {
+    onConfirm: () => {
       loading_row.value.add(api_document_id)
       request.post(API_URLS.api_document.delete, { api_document_id: api_document_id })
           .then((res) => {
@@ -475,11 +476,11 @@ const handle_delete_api_document = (row: api_document_data) => {
             confirm_dialog.destroy();
           });
     },
-    onClose: ({ e, trigger }) => {
+    onClose: () => {
       loading_row.value.delete(api_document_id);
       confirm_dialog.destroy();
     },
-    onCancel: ({ e, trigger }) => {
+    onCancel: () => {
       loading_row.value.delete(api_document_id);
       confirm_dialog.destroy();
     }

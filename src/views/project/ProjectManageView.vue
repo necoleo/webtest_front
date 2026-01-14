@@ -34,53 +34,96 @@
           <div class="main-content">
             <!-- 筛选栏 -->
             <div class="filter-actions-container">
-                <t-input
-                    class="search-input"
-                    v-model="search_key_word"
-                    placeholder="输入项目名称"
-                    clearable
-                    size="medium"
-                    type="search"
-                >
-                  <template #prefix-icon>
-                    <t-icon name="search"/>
-                  </template>
-                </t-input>
+              <t-input
+                  class="search-input"
+                  v-model="search_project_id"
+                  placeholder="输入项目id"
+                  clearable
+                  size="medium"
+                  type="number"
+              >
+                <template #prefix-icon>
+                  <t-icon name="search"/>
+                </template>
+              </t-input>
 
-                <t-select
-                    class="status-filter"
-                    v-model="status_filter_selection"
-                    :options="status_filter_options"
-                    clearable
-                    size="medium"
-                    placeholder="全部状态"
-                />
-                <t-button
-                    class="search-button"
-                    type="primary"
-                    variant="outline"
-                    @click="handleClickSearchButton"
-                >
-                  搜索
-                </t-button>
-                <t-button
-                    class="reset-search-button"
-                    type="primary"
-                    variant="outline"
-                    @click="handleClickResetButton"
-                >
-                  重置
-                </t-button>
-                <t-button
-                    class="add_project_button"
-                    theme="primary"
-                    variant="outline"
-                    @click="show_create_project_dialog=true"
-                >
-                  新增项目
-                </t-button>
+              <t-input
+                  class="search-input"
+                  v-model="search_project_name"
+                  placeholder="输入项目名称"
+                  clearable
+                  size="medium"
+                  type="search"
+              >
+                <template #prefix-icon>
+                  <t-icon name="search"/>
+                </template>
+              </t-input>
 
-              </div>
+              <t-input
+                  class="search-input"
+                  v-model="search_project_type"
+                  placeholder="输入项目类型"
+                  clearable
+                  size="medium"
+                  type="search"
+              >
+                <template #prefix-icon>
+                  <t-icon name="search"/>
+                </template>
+              </t-input>
+
+              <t-select
+                  class="search-select"
+                  v-model="search_project_status"
+                  :options="status_filter_options"
+                  clearable
+                  size="medium"
+                  placeholder="全部状态"
+              />
+
+              <t-date-picker
+                  class="search-date-picker"
+                  v-model="search_project_start_date"
+                  placeholder="开始日期"
+                  format="YYYY-MM-DD"
+                  clearable
+              ></t-date-picker>
+
+              <t-date-picker
+                  class="search-date-picker"
+                  v-model="search_project_end_date"
+                  placeholder="结束日期"
+                  format="YYYY-MM-DD"
+                  clearable
+              ></t-date-picker>
+
+              <t-button
+                  class="search-button"
+                  type="primary"
+                  variant="outline"
+                  @click="handle_click_search_button"
+              >
+                搜索
+              </t-button>
+              <t-button
+                  class="reset-search-button"
+                  type="primary"
+                  variant="outline"
+                  @click="handle_click_reset_button"
+              >
+                重置
+              </t-button>
+              <t-button
+                  class="add_project_button"
+                  theme="primary"
+                  variant="outline"
+                  @click="show_create_project_dialog=true"
+              >
+                新增项目
+              </t-button>
+            </div>
+
             <div class="project-table-container">
               <t-table
                   class="project-table"
@@ -165,15 +208,25 @@
 
   // 项目列表初始化
   const project_data = ref<project_data[]>([]);
-  // 总页数
-  const total = ref(0);
-  const status_map: Record<number, string> = {
-    0: '未开始',
-    1: '进行中',
-    2: '完成',
-    3: '暂停',
-    4: '终止'
-  }
+
+  // 搜索框-项目id
+  const search_project_id = ref<number | undefined>();
+
+  // 搜索框-项目名称
+  const search_project_name = ref<string>("")
+
+  // 搜索框-项目类型
+  const search_project_type = ref<string>("")
+
+  // 搜索框-项目状态
+  const search_project_status = ref<number | undefined>();
+
+  // 搜索框-计划开始日期
+  const search_project_start_date = ref<string>("");
+
+  // 搜索框-计划结束日期
+  const search_project_end_date = ref<string>("");
+
   // 存储正在操作的行 id
   const loading_row = ref<Set<number>>(new Set());
 
@@ -185,8 +238,17 @@
   // 选中的项目
   const updated_project_data = ref<project_data | null>(null)
 
-  // 项目状态下拉框初始化
-  const status_filter_selection = ref("")
+  // 总页数
+  const total = ref(0)
+  const pagination = ref<TableProps['pagination']>({
+    current: 1,
+    pageSize: 10,
+    total: total.value,
+    onChange: (pageInfo) => {
+      pagination.value!.current = pageInfo.current;
+      pagination.value!.pageSize = pageInfo.pageSize;
+    }
+  });
   // 项目状态选项
   const status_filter_options = [
     {
@@ -210,10 +272,14 @@
       value: 4
     }
   ]
-
-  // 搜索框关键字
-  const search_key_word = ref("")
-
+  // 项目状态map
+  const status_map: Record<number, string> = {
+    0: '未开始',
+    1: '进行中',
+    2: '完成',
+    3: '暂停',
+    4: '终止'
+  }
   const hover = ref(false);
   const size = ref<TableProps['size']>('large');
   const tableLayout = ref(false);
@@ -258,12 +324,6 @@
     },
   ]);
 
-  const pagination = ref<TableProps['pagination']>({
-    defaultCurrent: 1,
-    defaultPageSize: 5,
-    total: total.value,
-  });
-
   // 刷新项目列表
   const refresh_project_list = async () => {
     request.get(API_URLS.project.list)
@@ -279,9 +339,7 @@
                 project_status: item.project_status,
                 project_status_text: status_map[item.project_status],
                 start_date: item.start_date,
-                end_date: item.end_date,
-                requirement_document_name: item.requirement_name,
-                requirement_document_url: item.requirement_url,
+                end_date: item.end_date
               }
             });
             total.value = project_data.value.length;
@@ -290,9 +348,6 @@
             if (pagination.value) {
               pagination.value.total = total.value;
             }
-
-
-            console.log(project_data.value)
           }
         })
 
@@ -301,15 +356,64 @@
   refresh_project_list()
 
   // 点击搜索按钮
-  const handleClickSearchButton = () => {
-    console.log(search_key_word.value)
+  const handle_click_search_button = () => {
+    const params: any = {
+      page: pagination.value?.current || 1,
+      page_size: pagination.value?.pageSize || 10,
+    }
+    if (search_project_id.value != undefined) {
+      params.id = search_project_id.value;
+    }
+    if (search_project_name.value != "") {
+      params.project_name = search_project_name.value;
+    }
+    if (search_project_type.value != "") {
+      params.project_type = search_project_type.value;
+    }
+    if (search_project_status.value != undefined) {
+      params.project_status = search_project_status.value;
+    }
+    if (search_project_start_date.value != "") {
+      params.start_date = search_project_start_date.value;
+    }
+    if (search_project_end_date.value != "") {
+      params.end_date = search_project_end_date.value;
+    }
+
+    request.get(API_URLS.project.list, { params })
+        .then((res) => {
+          if (res.status === 200 && res.data.code === "000000") {
+            project_data.value = res.data.data.results.map((item: any) => {
+              return {
+                ...item,
+                project_id: item.id,
+                project_name: item.project_name,
+                description: item.description,
+                project_type: item.project_type,
+                project_status: item.project_status,
+                project_status_text: status_map[item.project_status],
+                start_date: item.start_date,
+                end_date: item.end_date,
+              }
+            });
+            total.value = res.data.data.total_count;
+            // 更新分页显示总数据
+            if (pagination.value) {
+              pagination.value.total = total.value;
+            }
+          }
+        })
   }
 
   // 点击重置按钮
-  const handleClickResetButton = () => {
-    search_key_word.value = "";
-    status_filter_selection.value = "";
-    handleClickSearchButton()
+  const handle_click_reset_button = () => {
+    search_project_id.value = undefined;
+    search_project_name.value = ""
+    search_project_type.value = ""
+    search_project_status.value = undefined;
+    search_project_start_date.value = ""
+    search_project_end_date.value = ""
+    handle_click_search_button()
   }
 
   // 点击编辑项目
@@ -335,7 +439,7 @@
       confirmBtn: '删除',
       cancelBtn: '取消',
       theme: 'warning',
-      onConfirm: ({ e }) => {
+      onConfirm: () => {
         loading_row.value.add(project_id)
         request.post(API_URLS.project.delete, { project_id: project_id })
             .then((res) => {
@@ -355,60 +459,17 @@
               confirm_dialog.destroy();
             });
       },
-      onClose: ({ e, trigger }) => {
+      onClose: () => {
         loading_row.value.delete(project_id);
         confirm_dialog.destroy();
       },
-      onCancel: ({ e, trigger }) => {
+      onCancel: () => {
         loading_row.value.delete(project_id);
         confirm_dialog.destroy();
       }
     });
   }
 
-  const onCancel = () => {
-    delete_dialog_visible.value = false;
-  }
-
-  const onEscKeydown = () => {
-    delete_dialog_visible.value = false;
-  }
-
-  const onCloseBtnClick = () => {
-    delete_dialog_visible.value = false;
-  }
-
-  const onOverlayClick = () => {
-    delete_dialog_visible.value = false;
-  }
-
-  const close = () => {
-    target_project.value = null;
-  }
-
-  // 点击项目删除确认按钮
-  const onConfirmAnother = () => {
-    console.log(target_project.value);
-    if (!target_project){
-      MessagePlugin.error("项目不存在")
-    }
-    try{
-      request.post(API_URLS.project.delete, {"project_id": target_project.value})
-          .then((res) => {
-            if (res.status === 200 && res.data.code === "00000") {
-              MessagePlugin.success("删除成功")
-              delete_dialog_visible.value = false;
-              refresh_project_list()
-            }
-            else {
-              MessagePlugin.error("删除失败: ${res.data.data}")
-            }
-          })
-    }
-    catch (e) {
-      MessagePlugin.error("删除失败: ${e.message}")
-    }
-  }
   
 </script>
 
@@ -488,12 +549,12 @@
     align-items: center;
     height: 100px;
     background-color: #FFF;
-    gap: 20px;
+    gap: 10px;
     padding: 0 20px;
   }
 
   .search-input{
-    width: 50%;
+    width: 15%;
   }
 
   :deep(.search-input .t-input) {
@@ -501,12 +562,16 @@
     height: 40px;
   }
 
-  .status-filter{
-    width: 25%;
+  .search-select{
+    width: 12%;
+  }
+  .search-date-picker{
+    width: 12%;
   }
 
-  :deep(.t-input.t-is-readonly .t-input__inner) {
-    width: 25%;
+  :deep(.t-input.t-is-readonly) {
+    border-radius: 12px;
+    height: 40px;
   }
 
   :deep(.status-filter .t-input) {
@@ -515,10 +580,10 @@
     height: 40px;
   }
 
-  /* 搜索、重置、上传按钮  */
+  /* 搜索、重置、新增项目按钮  */
   .search-button,
   .reset-search-button,
-  .upload-file-button {
+  .add_project_button {
     border-radius: 12px;
     font-weight: 500;
     transition: all 0.3s ease;
@@ -526,17 +591,6 @@
     height: 40px;
   }
 
-  :deep(.upload-file-button .t-button__text) {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .add_project_button {
-    border-radius: 12px;
-    width: 25%;
-    height: 40px;
-  }
   /* 项目表单样式 */
   .project-table-container{
     display: flex;
