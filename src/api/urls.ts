@@ -22,6 +22,33 @@ interface ApiUrls{
         delete: string;
         parse: string;
         update: string;
+    },
+    api_test_case: {
+        upload: string;
+        list: string;
+        detail: string;
+        yaml: string;
+        delete: string;
+    },
+    api_test_environment: {
+        create: string;
+        list: string;
+        update: string;
+        delete: string;
+    },
+    api_test_execution: {
+        execute: string;
+        status: string;
+        history: string;
+        detail: string;
+    },
+    api_test_schedule: {
+        create: string;
+        list: string;
+        update: string;
+        toggle: string;
+        delete: string;
+        trigger: string;
     }
 }
 
@@ -45,6 +72,33 @@ export const API_URLS: ApiUrls = {
         delete: 'api/api_document/delete/',
         parse: 'api/api_document/parse/',
         update: 'api/api_document/update/',
+    },
+    api_test_case: {
+        upload: 'api/api_test_case/upload/',
+        list: 'api/api_test_case/list/',
+        detail: 'api/api_test_case/detail/',
+        yaml: 'api/api_test_case/yaml/',
+        delete: 'api/api_test_case/delete/',
+    },
+    api_test_environment: {
+        create: 'api/api_test_environment/create/',
+        list: 'api/api_test_environment/list/',
+        update: 'api/api_test_environment/update/',
+        delete: 'api/api_test_environment/delete/',
+    },
+    api_test_execution: {
+        execute: 'api/api_test_execution/execute/',
+        status: 'api/api_test_execution/status/',
+        history: 'api/api_test_execution/history/',
+        detail: 'api/api_test_execution/detail/',
+    },
+    api_test_schedule: {
+        create: 'api/api_test_schedule/create/',
+        list: 'api/api_test_schedule/list/',
+        update: 'api/api_test_schedule/update/',
+        toggle: 'api/api_test_schedule/toggle/',
+        delete: 'api/api_test_schedule/delete/',
+        trigger: 'api/api_test_schedule/trigger/',
     }
 }
 

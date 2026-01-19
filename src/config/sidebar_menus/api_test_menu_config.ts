@@ -27,27 +27,32 @@ export const api_test_manage_menus: menu_item[] = [
             {
                 key: 'api-test-management',
                 title: '接口管理',
-                path: '',
+                path: '/api-document',
             },
             {
                 key: 'api-test-cases',
                 title: '接口用例',
-                path: '',
+                path: '/api-test-case',
             },
             {
-                key: 'api-test-data-config',
-                title: '数据配置',
-                path: '',
+                key: 'api-test-environment',
+                title: '环境配置',
+                path: '/api-test-environment',
             },
             {
                 key: 'api-test-execution',
-                title: '用例执行',
-                path: '',
+                title: '执行历史',
+                path: '/api-test-execution',
             },
             {
                 key: 'api-test-reports',
                 title: '测试报告',
-                path: '',
+                path: '/api-test-report',
+            },
+            {
+                key: 'api-test-schedule',
+                title: '定时任务',
+                path: '/api-test-schedule',
             }
         ]
     },
