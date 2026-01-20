@@ -55,7 +55,7 @@ interface ApiUrls{
 export const API_URLS: ApiUrls = {
     users: {
         user_login: 'api/user/login/',
-        user_register: 'api/user/register',
+        user_register: 'api/user/register/',
     },
     project: {
         create: 'api/project/create/',

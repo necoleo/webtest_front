@@ -291,6 +291,7 @@ const refresh_test_case_list = async () => {
       .then((res) => {
         if (res.status === 200 && res.data.code === "000000") {
           test_case_data.value = res.data.data.results;
+          console.log(test_case_data.value);
           total.value = res.data.data.total_count;
           if (pagination.value) {
             pagination.value.total = total.value;
