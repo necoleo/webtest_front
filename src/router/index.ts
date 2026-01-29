@@ -1,12 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomeView from "@/views/HomeView.vue";
 import RegisterView from "@/views/user/RegisterView.vue";
-import CasesManageView from "@/views/project/CasesManageView.vue";
-import ProjectDemoView from "@/views/project/ProjectManageView.vue";
 import LoginView from "@/views/user/LoginView.vue";
 import ApiDocumentManageView from "@/views/api_test/ApiDocumentManageView.vue";
-
-// 接口测试相关页面
 import ApiTestCaseManageView from "@/views/api_test/ApiTestCaseManageView.vue";
 import ApiTestCaseDetailView from "@/views/api_test/ApiTestCaseDetailView.vue";
 import EnvironmentConfigView from "@/views/api_test/EnvironmentConfigView.vue";
@@ -14,8 +10,10 @@ import ExecutionHistoryView from "@/views/api_test/ExecutionHistoryView.vue";
 import ExecutionDetailView from "@/views/api_test/ExecutionDetailView.vue";
 import TestReportView from "@/views/api_test/TestReportView.vue";
 import ScheduledTaskView from "@/views/api_test/ScheduledTaskView.vue";
-
-
+import ProjectManageView from "@/views/project/ProjectManageView.vue";
+import RequirementDocumentManageView from "@/views/requirement/RequirementDocumentManageView.vue";
+import RequirementManageView from "@/views/requirement/RequirementManageView.vue";
+import FunctionalTestCaseManageView from "@/views/functional_test/FunctionalTestCaseManageView.vue";
 
 // 1. 定义路由规则（每个路由对应一个组件）
 const routes = [
@@ -37,12 +35,22 @@ const routes = [
     {
         path: '/project',
         name: 'Project',
-        component: ProjectDemoView
+        component: ProjectManageView
     },
     {
-        path: '/cases-manage',
-        name: 'CasesManage',
-        component: CasesManageView
+        path: '/requirement/documents',
+        name: 'RequirementDocument',
+        component: RequirementDocumentManageView
+    },
+    {
+        path: '/requirement/list',
+        name: 'RequirementList',
+        component: RequirementManageView
+    },
+    {
+        path: '/functional-test/cases',
+        name: 'FunctionalTestCase',
+        component: FunctionalTestCaseManageView
     },
     {
         path: '/api-document',

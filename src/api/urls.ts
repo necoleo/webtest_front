@@ -15,6 +15,24 @@ interface ApiUrls{
     },
     requirements_document: {
         upload: string;
+        list: string;
+        update: string;
+        delete: string;
+        parse: string;
+    },
+    requirement: {
+        list: string;
+        upload: string;
+        update: string;
+        delete: string;
+        audit: string;
+    },
+    functional_test_case: {
+        create: string;
+        list: string;
+        detail: string;
+        update: string;
+        delete: string;
     },
     api_document: {
         upload: string;
@@ -64,7 +82,25 @@ export const API_URLS: ApiUrls = {
         list:   'api/project/list/',
     },
     requirements_document: {
-        upload: 'api/requirements_document/upload',
+        upload: 'api/requirement_document/upload/',
+        list: 'api/requirement_document/list/',
+        update: 'api/requirement_document/update/',
+        delete: 'api/requirement_document/delete/',
+        parse: 'api/requirement_document/parse/'
+    },
+    requirement: {
+        list: 'api/requirement/list/',
+        upload: 'api/requirement/upload/',
+        update: 'api/requirement/update/',
+        delete: 'api/requirement/delete/',
+        audit: 'api/requirement/audit/',
+    },
+    functional_test_case: {
+        create: 'api/functional_test_case/create/',
+        list: 'api/functional_test_case/list/',
+        detail: 'api/functional_test_case/detail/',
+        update: 'api/functional_test_case/update/',
+        delete: 'api/functional_test_case/delete/',
     },
     api_document: {
         upload: 'api/api_document/upload/',

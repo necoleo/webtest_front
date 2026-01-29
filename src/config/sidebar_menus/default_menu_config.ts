@@ -16,23 +16,30 @@ export const default_menu: menu_item[] = [
     },
     {
         key: 'requirement-management',
-        title: '需求文档管理',
+        title: '需求管理',
         icon: 'document',
         children: [
             {
                 key: 'requirement-doc-list',
                 title: '需求文档列表',
-                path: '/requirements/documents',
+                path: '/requirement/documents',
             },
             {
                 key: 'requirement-list',
                 title: '需求项管理',
-                path: '',
-            },
+                path: '/requirement/list',
+            }
+        ]
+    },
+    {
+        key: 'functional-test',
+        title: '功能测试',
+        icon: 'check-rectangle',
+        children: [
             {
-                key: 'requirement-relations',
-                title: '需求关联分析',
-                path: '',
+                key: 'functional-test-case-list',
+                title: '测试用例列表',
+                path: '/functional-test/cases',
             }
         ]
     },
@@ -70,50 +77,6 @@ export const default_menu: menu_item[] = [
                 key: 'api-test-schedule',
                 title: '定时任务',
                 path: '/api-test-schedule',
-            }
-        ]
-    },
-    {
-        key: 'test-case-management',
-        title: '测试用例管理',
-        icon: 'check-rectangle',
-        children: [
-            {
-                key: 'test-case-list',
-                title: '测试用例列表',
-                path: '/cases-manage',
-            },
-            {
-                key: 'ai-generate-cases',
-                title: 'AI生成测试用例',
-                path: '',
-            },
-            {
-                key: 'case-requirement-link',
-                title: '用例关联需求',
-                path: '',
-            },
-            {
-                key: 'case-api-link',
-                title: '用例关联接口',
-                path: '',
-            }
-        ]
-    },
-    {
-        key: 'system-settings',
-        title: '系统设置',
-        icon: 'setting',
-        children: [
-            {
-                key: 'project-config',
-                title: '项目配置',
-                path: '',
-            },
-            {
-                key: 'permission-config',
-                title: '权限设置',
-                path: '',
             }
         ]
     }

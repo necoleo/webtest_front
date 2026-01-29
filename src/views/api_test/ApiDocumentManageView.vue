@@ -397,7 +397,7 @@ const handle_click_search_button = () => {
 const handle_download_api_document = (row: api_document_data) => {
   const url = row.cos_access_url;
   if (!url) {
-    MessagePlugin.error('该需求文档暂无访问链接');
+    MessagePlugin.error('该接口文档暂无访问链接');
     return;
   }
   try {
