@@ -349,7 +349,7 @@ refresh_api_document_list()
 const handle_click_search_button = () => {
   const params: any = {
     page: pagination.value?.current || 1,
-    page_size: pagination.value?.pageSize || 10,
+    page_size: pagination.value?.pageSize || 20,
   }
 
   if (search_api_document_id.value != undefined) {

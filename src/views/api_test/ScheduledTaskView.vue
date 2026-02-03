@@ -269,7 +269,7 @@ const show_header = ref<boolean>(true)
 const total = ref(0)
 const pagination = ref<TableProps['pagination']>({
   current: 1,
-  pageSize: 10,
+  pageSize: 20,
   total: total.value,
   onChange: (pageInfo) => {
     pagination.value!.current = pageInfo.current
@@ -306,7 +306,7 @@ const refresh_schedule_list = async () => {
   table_loading.value = true
   const params: any = {
     page: pagination.value?.current || 1,
-    page_size: pagination.value?.pageSize || 10,
+    page_size: pagination.value?.pageSize || 20,
   }
   request.get(API_URLS.api_test_schedule.list, { params })
       .then((res) => {
@@ -328,7 +328,7 @@ const handle_click_search_button = () => {
   table_loading.value = true
   const params: any = {
     page: pagination.value?.current || 1,
-    page_size: pagination.value?.pageSize || 10,
+    page_size: pagination.value?.pageSize || 20,
   }
 
   if (filter_task_name.value) {

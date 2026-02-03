@@ -371,7 +371,7 @@ const updated_test_case_data = ref<test_case_data | null>(null)
 const total = ref(0)
 const pagination = ref<TableProps['pagination']>({
   current: 1,
-  pageSize: 10,
+  pageSize: 20,
   total: total.value,
   onChange: (pageInfo) => {
     pagination.value!.current = pageInfo.current;
@@ -423,7 +423,7 @@ const columns = ref<TableProps['columns']>([
 const refresh_test_case_list = async () => {
   const params: any = {
     page: pagination.value?.current || 1,
-    page_size: pagination.value?.pageSize || 10,
+    page_size: pagination.value?.pageSize || 20,
   }
   request.get(API_URLS.functional_test_case.list, { params })
       .then((res) => {
@@ -461,7 +461,7 @@ refresh_test_case_list()
 const handle_click_search_button = () => {
   const params: any = {
     page: pagination.value?.current || 1,
-    page_size: pagination.value?.pageSize || 10,
+    page_size: pagination.value?.pageSize || 20,
   }
   if (search_test_case_id.value != undefined) {
     params.test_case_id = search_test_case_id.value;

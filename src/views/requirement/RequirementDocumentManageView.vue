@@ -220,6 +220,7 @@ import {ref} from "vue";
 import type {TableProps} from "tdesign-vue-next";
 import { MessagePlugin,DialogPlugin} from 'tdesign-vue-next';
 import {request} from "@/api/urls.ts";
+import { formatFileSize } from "@/utils/format_file_size";
 import UploadRequirementDocumentDialog from "@/views/requirement/components/UploadRequirementDocumentDialog.vue";
 import UpdateRequirementDocumentDialog from "@/views/requirement/components/UpdateRequirementDocumentDialog.vue";
 
@@ -301,7 +302,7 @@ const updated_requirement_document_data = ref<requirement_document_data | null>(
 const total = ref(0)
 const pagination = ref<TableProps['pagination']>({
   current: 1,
-  pageSize: 10,
+  pageSize: 20,
   total: total.value,
   onChange: (pageInfo) => {
     pagination.value!.current = pageInfo.current;
@@ -362,6 +363,7 @@ const columns = ref<TableProps['columns']>([
     colKey: 'file_size',
     title: '文件大小',
     ellipsis: true,
+    cell: (_, { row }) => formatFileSize(row.file_size || 0)
   },
   {
     colKey: 'comment',
@@ -429,7 +431,7 @@ refresh_requirement_document_list()
 const handle_click_search_button = () => {
   const params: any = {
     page: pagination.value?.current || 1,
-    page_size: pagination.value?.pageSize || 10,
+    page_size: pagination.value?.pageSize || 20,
   }
   if (search_requirement_document_id.value != undefined) {
     params.id = search_requirement_document_id.value;
