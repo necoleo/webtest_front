@@ -57,7 +57,7 @@
             :auto-upload="false"
             :multiple="false"
             :max="1"
-            accept=".docx, .doc, .md"
+            accept=".pdf"
             draggable
             theme="custom"
         >
@@ -75,7 +75,7 @@
               <template v-else>
                 <t-icon name="upload" size="48px" />
                 <p v-if="drag_active">释放鼠标上传</p>
-                <p v-else>点击或拖拽上传 word文档 / md文档</p>
+                <p v-else>点击或拖拽上传 PDF 文档</p>
               </template>
 
             </div>

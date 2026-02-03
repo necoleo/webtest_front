@@ -91,20 +91,29 @@
     return null
   }
 
-  // 根据 path 找到当前的菜单项
+  // 根据 path 找到当前的菜单项（支持子路由匹配）
   const find_menu_item_by_path = (path: string, items: menu_item[]): menu_item | null => {
-    for (const item of items){
-      if (item.path === path){
-        return item
-      }
-      if (item.children){
-        const children_menu = find_menu_item_by_path(path, item.children)
-        if (children_menu){
-          return children_menu
+    let best_match: menu_item | null = null
+    let best_match_length = 0
+
+    const search = (items: menu_item[]) => {
+      for (const item of items) {
+        // 精确匹配或前缀匹配（当前路径以菜单路径开头）
+        if (item.path && (path === item.path || path.startsWith(item.path + '/'))) {
+          // 选择匹配长度最长的（最精确的匹配）
+          if (item.path.length > best_match_length) {
+            best_match = item
+            best_match_length = item.path.length
+          }
+        }
+        if (item.children) {
+          search(item.children)
         }
       }
     }
-    return null
+
+    search(items)
+    return best_match
   }
 
   // 根据当前子菜单找到其对应的父菜单
