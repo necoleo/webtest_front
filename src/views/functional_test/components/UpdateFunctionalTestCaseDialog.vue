@@ -1,10 +1,12 @@
 <template>
-  <t-dialog
-      width="700px"
+  <t-drawer
+      size="850px"
       :visible="props.visible"
       header="编辑测试用例"
-      :loading = "loading"
+      placement="right"
       :on-close="handle_close"
+      :confirm-btn="{ content: '保存', theme: 'primary', loading: loading }"
+      cancel-btn="取消"
       :on-confirm="handle_confirm"
   >
     <t-form
@@ -77,7 +79,7 @@
         <t-textarea
             v-model="form_data.precondition"
             placeholder="请输入前置条件（可选）"
-            :autosize="{ minRows: 2, maxRows: 4}"
+            :autosize="{ minRows: 2, maxRows: 6}"
         />
       </t-form-item>
 
@@ -101,7 +103,7 @@
         <t-textarea
             v-model="form_data.expected_result"
             placeholder="请输入预期结果"
-            :autosize="{ minRows: 2, maxRows: 4}"
+            :autosize="{ minRows: 2, maxRows: 6}"
         />
       </t-form-item>
 
@@ -118,7 +120,7 @@
       </t-form-item>
 
     </t-form>
-  </t-dialog>
+  </t-drawer>
 </template>
 
 <script setup lang="ts">

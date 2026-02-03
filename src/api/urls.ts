@@ -33,6 +33,7 @@ interface ApiUrls{
         detail: string;
         update: string;
         delete: string;
+        generate: string;
     },
     api_document: {
         upload: string;
@@ -101,6 +102,7 @@ export const API_URLS: ApiUrls = {
         detail: 'api/functional_test_case/detail/',
         update: 'api/functional_test_case/update/',
         delete: 'api/functional_test_case/delete/',
+        generate: 'api/functional_test_case/generate/',
     },
     api_document: {
         upload: 'api/api_document/upload/',

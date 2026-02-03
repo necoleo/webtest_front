@@ -177,6 +177,30 @@
                       详情
                     </t-link>
                     <t-link
+                        v-if="row.execution_status === 0"
+                        theme="primary"
+                        hover="color"
+                        @click="handle_start_execute(row)"
+                    >
+                      执行
+                    </t-link>
+                    <t-link
+                        v-if="row.execution_status === 1"
+                        theme="primary"
+                        hover="color"
+                        @click="handle_mark_pass(row)"
+                    >
+                      通过
+                    </t-link>
+                    <t-link
+                        v-if="row.execution_status === 1"
+                        theme="primary"
+                        hover="color"
+                        @click="handle_mark_fail(row)"
+                    >
+                      失败
+                    </t-link>
+                    <t-link
                         class="edit_test_case_button"
                         theme="primary"
                         hover="color"
@@ -504,6 +528,84 @@ const handle_click_reset_button = () => {
 const handle_view_detail = (row: test_case_data) => {
   show_detail_dialog.value = true
   selected_test_case_data.value = row
+}
+
+// 点击执行
+const handle_start_execute = (row: test_case_data) => {
+  const test_case_id = row.test_case_id
+  loading_row.value.add(test_case_id)
+  if (!test_case_id){
+    MessagePlugin.error("测试用例不存在")
+    return ;
+  }
+  request.post(API_URLS.functional_test_case.update, {test_case_id: test_case_id, execution_status: 1})
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000") {
+          MessagePlugin.success(`更新状态成功`);
+          refresh_test_case_list();
+        }
+        else {
+          MessagePlugin.error(`更新状态失败: ${res.data.message}`);
+        }
+      })
+      .catch((e) => {
+        MessagePlugin.error(`更新状态失败: ${e.response?.data?.message || e.message}`);
+      })
+      .finally(() => {
+        loading_row.value.delete(test_case_id);
+      });
+}
+
+// 点击通过
+const handle_mark_pass = (row: test_case_data) => {
+  const test_case_id = row.test_case_id
+  loading_row.value.add(test_case_id)
+  if (!test_case_id){
+    MessagePlugin.error("测试用例不存在")
+    return ;
+  }
+  request.post(API_URLS.functional_test_case.update, {test_case_id: test_case_id, execution_status: 2})
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000") {
+          MessagePlugin.success(`更新状态成功`);
+          refresh_test_case_list();
+        }
+        else {
+          MessagePlugin.error(`更新状态失败: ${res.data.message}`);
+        }
+      })
+      .catch((e) => {
+        MessagePlugin.error(`更新状态失败: ${e.response?.data?.message || e.message}`);
+      })
+      .finally(() => {
+        loading_row.value.delete(test_case_id);
+      });
+}
+
+// 点击失败
+const handle_mark_fail = (row: test_case_data) => {
+  const test_case_id = row.test_case_id
+  loading_row.value.add(test_case_id)
+  if (!test_case_id){
+    MessagePlugin.error("测试用例不存在")
+    return ;
+  }
+  request.post(API_URLS.functional_test_case.update, {test_case_id: test_case_id, execution_status: 3})
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000") {
+          MessagePlugin.success(`更新状态成功`);
+          refresh_test_case_list();
+        }
+        else {
+          MessagePlugin.error(`更新状态失败: ${res.data.message}`);
+        }
+      })
+      .catch((e) => {
+        MessagePlugin.error(`更新状态失败: ${e.response?.data?.message || e.message}`);
+      })
+      .finally(() => {
+        loading_row.value.delete(test_case_id);
+      });
 }
 
 // 点击编辑

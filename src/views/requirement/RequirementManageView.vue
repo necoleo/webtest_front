@@ -120,6 +120,15 @@
               >
                 批量审核
               </t-button>
+              <t-button
+                  class="batch-generate_test_case"
+                  theme="primary"
+                  variant="outline"
+                  :disabled="selected_row_keys.length === 0"
+                  @click="handle_batch_generate_test_case"
+              >
+                批量生成用例
+              </t-button>
             </div>
 
             <div class="requirement-table-container">
@@ -190,6 +199,16 @@
                       审核
                     </t-link>
                     <t-link
+                        v-if="row.status === 2"
+                        class="generate_test_case_button"
+                        theme="primary"
+                        hover="color"
+                        :disabled="loading_row.has(row.requirement_id)"
+                        @click="handle_generate_test_case(row)"
+                    >
+                      生成用例
+                    </t-link>
+                    <t-link
                         class="delete_requirement_button"
                         theme="primary"
                         hover="color"
@@ -253,8 +272,8 @@ const status_map: Record<number, string> = {
   0: '待审核',
   1: '处理中',
   2: '已审核',
-  3: '测试用例生成中',
-  4: '测试用例已覆盖',
+  3: '用例生成中',
+  4: '用例已覆盖',
   5: '已废弃'
 }
 
@@ -334,8 +353,8 @@ const status_filter_options = [
   { label: "待审核", value: 0 },
   { label: "处理中", value: 1 },
   { label: "已审核", value: 2 },
-  { label: "测试用例生成中", value: 3 },
-  { label: "测试用例已覆盖", value: 4 },
+  { label: "用例生成中", value: 3 },
+  { label: "用例已覆盖", value: 4 },
   { label: "已废弃", value: 5 }
 ]
 
@@ -508,6 +527,29 @@ const handle_audit_requirement = (row: requirement_data) => {
   });
 }
 
+// 生成单个需求项的测试用例
+const handle_generate_test_case = (row: requirement_data) => {
+  const requirement_id = row.requirement_id
+  loading_row.value.add(requirement_id)
+
+  request.post(API_URLS.functional_test_case.generate, { requirement_id_list: [requirement_id] })
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000") {
+          MessagePlugin.success(`提交生成测试用例成功`);
+          refresh_requirement_list();
+        }
+        else {
+          MessagePlugin.error(`生成测试用例失败: ${res.data.message}`);
+        }
+      })
+      .catch((e) => {
+        MessagePlugin.error(`生成测试用例失败: ${e.response?.data?.message || e.message}`);
+      })
+      .finally(() => {
+        loading_row.value.delete(requirement_id);
+      });
+}
+
 // 批量审核
 const handle_batch_audit = () => {
   if (selected_row_keys.value.length === 0) {
@@ -556,6 +598,37 @@ const handle_batch_audit = () => {
       confirm_dialog.destroy();
     }
   });
+}
+
+// 批量生成测试用例
+const handle_batch_generate_test_case = () => {
+  if (selected_row_keys.value.length === 0) {
+    MessagePlugin.warning("请选择要生成测试用例的需求项")
+    return
+  }
+
+  // 检查是否有非已审核状态的需求项
+  const invalid_rows = requirement_data.value.filter(
+      row => selected_row_keys.value.includes(row.requirement_id) && row.status !== 2
+  )
+  if (invalid_rows.length > 0) {
+    MessagePlugin.warning("只有已审核状态的需求项才能生成测试用例")
+    return
+  }
+  request.post(API_URLS.functional_test_case.generate, { requirement_id_list: selected_row_keys.value })
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000") {
+          MessagePlugin.success(`批量生成测试用例任务提交成功`);
+          selected_row_keys.value = []
+          refresh_requirement_list();
+        }
+        else {
+          MessagePlugin.error(`批量生成失败: ${res.data.message}`);
+        }
+      })
+      .catch((e) => {
+        MessagePlugin.error(`批量生成失败: ${e.response?.data?.message || e.message}`);
+      })
 }
 
 // 点击删除需求项
@@ -712,7 +785,8 @@ const handle_delete_requirement = (row: requirement_data) => {
 /* 搜索、重置、批量审核按钮  */
 .search-button,
 .reset-search-button,
-.batch-audit-button {
+.batch-audit-button,
+.batch-generate_test_case{
   border-radius: 12px;
   font-weight: 500;
   transition: all 0.3s ease;

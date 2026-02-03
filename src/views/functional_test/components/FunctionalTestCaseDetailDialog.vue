@@ -1,10 +1,11 @@
 <template>
-  <t-dialog
-      width="700px"
+  <t-drawer
+      size="850px"
       :visible="props.visible"
       header="测试用例详情"
       :footer="false"
       :on-close="handle_close"
+      placement="right"
   >
     <div class="detail-container">
       <t-descriptions
@@ -78,7 +79,7 @@
         </div>
       </div>
     </div>
-  </t-dialog>
+  </t-drawer>
 </template>
 
 <script setup lang="ts">
