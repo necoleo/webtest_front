@@ -6,6 +6,12 @@
       :footer="false"
       :on-close="handle_close"
   >
+    <div class="content-section">
+    <div class="content-label">需求内容</div>
+    <div class="content-text">
+      {{ form_data.requirement_content || '-' }}
+    </div>
+  </div>
     <div class="detail-container">
       <t-descriptions
           :column="1"
@@ -44,13 +50,6 @@
           {{ form_data.updated_at || '-' }}
         </t-descriptions-item>
       </t-descriptions>
-
-      <div class="content-section">
-        <div class="content-label">需求内容</div>
-        <div class="content-text">
-          {{ form_data.requirement_content || '-' }}
-        </div>
-      </div>
     </div>
   </t-dialog>
 </template>
