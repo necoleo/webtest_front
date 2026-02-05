@@ -33,7 +33,17 @@
           <!-- 主要内容 -->
           <div class="main-content">
             <!-- 筛选栏 -->
-            <div class="filter-actions-container">
+            <form class="filter-actions-container"
+                  @submit.prevent="handle_click_search_button"
+            >
+              <t-select
+                  class="search-select"
+                  v-model="search_module"
+                  :options="module_options"
+                  placeholder="选择所属模块"
+                  clearable
+                  size="medium"
+              />
               <t-input
                   class="search-input"
                   v-model="search_case_name"
@@ -62,15 +72,14 @@
 
               <t-button
                   class="search-button"
-                  type="primary"
+                  type="submit"
                   variant="outline"
-                  @click="handle_click_search_button"
               >
                 搜索
               </t-button>
               <t-button
                   class="reset-search-button"
-                  type="primary"
+                  type="button"
                   variant="outline"
                   @click="handle_click_reset_button"
               >
@@ -84,7 +93,7 @@
               >
                 上传用例
               </t-button>
-            </div>
+            </form>
             <div class="test_case_table_container">
               <t-table
                   class="test-case-table"
@@ -105,6 +114,11 @@
                 <template #source="{ row }">
                   <t-tag :theme="row.source === 0 ? 'primary' : 'success'" variant="light">
                     {{ row.source === 0 ? '手动上传' : 'AI生成' }}
+                  </t-tag>
+                </template>
+                <template #module="{ row }">
+                  <t-tag v-if="row.module" :theme="'primary'" variant="light">
+                    {{ row.module }}
                   </t-tag>
                 </template>
                 <template #last_execution_status="{ row }">
@@ -182,6 +196,7 @@ const router = useRouter()
 interface test_case_item {
   id: number;
   project_id: number;
+  module: string;
   case_name: string;
   source: number;
   total_executions: number;
@@ -197,6 +212,11 @@ const test_case_data = ref<test_case_item[]>([])
 const search_case_name = ref("");
 // 搜索框-所属项目id
 const search_project_id = ref<number | undefined>();
+
+// 所属模块
+const search_module = ref<string>("")
+// 所属模块下拉选项
+const module_options = ref<{label: string; value: number}[]>([])
 
 // hover 效果
 const hover = ref<boolean>(true);
@@ -247,6 +267,11 @@ const columns = ref<TableProps['columns']>([
     width: 100,
   },
   {
+    colKey: 'module',
+    title: '所属模块',
+    width: 120,
+  },
+  {
     colKey: 'source',
     title: '来源',
     width: 100,
@@ -282,7 +307,23 @@ const columns = ref<TableProps['columns']>([
 const handle_click_reset_button = () => {
   search_case_name.value = "";
   search_project_id.value = undefined;
+  search_module.value = "";
   handle_click_search_button()
+}
+
+// 获取模块列表
+const fetch_modules_list = async () => {
+  request.get(API_URLS.api_test_case.modules)
+      .then((res) => {
+        console.log(res)
+        if (res.status === 200 && res.data.code === "000000"){
+          module_options.value = res.data.data.module.map((item: any) => ({
+            label: `${item.module} (${item.count})`,
+            value: item.module
+          }))
+          console.log(module_options.value)
+        }
+      })
 }
 
 // 刷新列表
@@ -300,8 +341,11 @@ const refresh_test_case_list = async () => {
       })
 }
 
+// 获取模块列表
+fetch_modules_list()
 // 进来先刷新列表
 refresh_test_case_list()
+
 
 // 搜索
 const handle_click_search_button = () => {
@@ -315,6 +359,9 @@ const handle_click_search_button = () => {
   }
   if (search_project_id.value != undefined) {
     params.project_id = search_project_id.value;
+  }
+  if (search_module.value != undefined) {
+    params.module = search_module.value;
   }
 
   request.get(API_URLS.api_test_case.list, { params })
@@ -463,14 +510,17 @@ const handle_delete_test_case = (row: test_case_item) => {
   padding: 0 20px;
 }
 
-.search-input{
+.search-select{
   width: 50%;
 }
 
+:deep(.search-select .t-input),
 :deep(.search-input .t-input) {
   border-radius: 12px;
   height: 40px;
 }
+
+
 
 /* 搜索、重置、上传按钮  */
 .search-button,

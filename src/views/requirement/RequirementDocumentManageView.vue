@@ -33,7 +33,9 @@
           <!-- 主要内容 -->
           <div class="main-content">
             <!-- 筛选栏 -->
-            <div class="filter-actions-container">
+            <form class="filter-actions-container"
+                  @submit.prevent="handle_click_search_button"
+            >
               <t-input
                   class="search-input"
                   v-model="search_requirement_document_id"
@@ -103,15 +105,14 @@
 
               <t-button
                   class="search-button"
-                  type="primary"
+                  type="submit"
                   variant="outline"
-                  @click="handle_click_search_button"
               >
                 搜索
               </t-button>
               <t-button
                   class="reset-search-button"
-                  type="primary"
+                  type="button"
                   variant="outline"
                   @click="handle_click_reset_button"
               >
@@ -125,7 +126,7 @@
               >
                 上传需求文档
               </t-button>
-            </div>
+            </form>
 
             <div class="requirement_document-table-container">
               <t-table

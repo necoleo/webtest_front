@@ -23,7 +23,21 @@
             clearable
         />
       </t-form-item>
-
+      <t-form-item
+          label="所属模块"
+          name="module"
+      >
+        <t-select
+            v-model="form_data.module"
+            :options="module_options"
+            placeholder="选择或输入模块"
+            filterable
+            creatable
+            clearable
+            @create="handle_create_module"
+            @focus="fetch_modules_list"
+        />
+      </t-form-item>
       <t-form-item
           label="用例名称"
           name="case_name"
@@ -100,7 +114,8 @@ const loading = ref(false)
 const form_data = ref({
   project_id: null as number | null,
   case_name: "",
-  description: ""
+  description: "",
+  module: "",
 })
 
 // 上传文件列表
@@ -109,13 +124,26 @@ const uploaded_files = ref<any[]>([])
 // 项目下拉选项
 const project_options = ref<{label: string; value: number}[]>([])
 
+// 所属模块下拉选项
+const module_options = ref<{label: string; value: string}[]>([])
+
+const handle_create_module = (value: string) => {
+  // 将新模块添加到选项列表并自动选中
+  module_options.value.push({
+    label: value,
+    value: value
+  })
+  form_data.value.module = value
+}
+
 // 关闭弹窗
 const handle_close = () => {
   // 重置表单
   form_data.value = {
     project_id: null,
     case_name: "",
-    description: ""
+    description: "",
+    module: ""
   }
   uploaded_files.value = []
 
@@ -146,6 +174,7 @@ const handle_confirm = async () => {
   submit_form_data.append("case_name", form_data.value.case_name)
   submit_form_data.append("description", form_data.value.description)
   submit_form_data.append("file", uploaded_files.value[0].raw)
+  submit_form_data.append("module", form_data.value.module)
 
   request.post(API_URLS.api_test_case.upload, submit_form_data)
       .then((res) => {
@@ -180,10 +209,25 @@ const fetch_project_lists = async () => {
       })
 }
 
+// 获取模块列表
+const fetch_modules_list = async () => {
+  request.get(API_URLS.api_test_case.modules)
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000"){
+          module_options.value = res.data.data.module.map((item: any) => ({
+            label: `${item.module} (${item.count})`,
+            value: item.module
+          }))
+        }
+      })
+}
+
+
 // 监听弹窗打开，获取项目列表
 watch(() => props.visible, (val) => {
   if (val){
     fetch_project_lists()
+    fetch_modules_list()
   }
 })
 </script>

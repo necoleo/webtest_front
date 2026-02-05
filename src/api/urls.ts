@@ -48,6 +48,7 @@ interface ApiUrls{
         detail: string;
         yaml: string;
         delete: string;
+        modules: string;
     },
     api_test_environment: {
         create: string;
@@ -117,6 +118,7 @@ export const API_URLS: ApiUrls = {
         detail: 'api/api_test_case/detail/',
         yaml: 'api/api_test_case/yaml/',
         delete: 'api/api_test_case/delete/',
+        modules: 'api/api_document/modules/',
     },
     api_test_environment: {
         create: 'api/api_test_environment/create/',
