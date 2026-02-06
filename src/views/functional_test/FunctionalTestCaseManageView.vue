@@ -36,6 +36,14 @@
             <form class="filter-actions-container"
                   @submit.prevent="handle_click_search_button"
             >
+              <t-select
+                  class="search-select"
+                  v-model="search_module"
+                  :options="module_options"
+                  placeholder="选择所属模块"
+                  clearable
+                  size="medium"
+              />
               <t-input
                   class="search-input"
                   v-model="search_test_case_id"
@@ -229,12 +237,12 @@
             ></functional-test-case-detail-dialog>
             <create-functional-test-case-dialog
                 v-model:visible="show_create_dialog"
-                @success="refresh_test_case_list"
+                @success="refresh_all_data"
             ></create-functional-test-case-dialog>
             <update-functional-test-case-dialog
                 v-model:visible="show_update_dialog"
                 :test_case_data="updated_test_case_data"
-                @success="refresh_test_case_list"
+                @success="refresh_all_data"
             ></update-functional-test-case-dialog>
           </div>
 
@@ -347,6 +355,10 @@ const get_execution_status_text = (status: number): string => {
 const test_case_data = ref<test_case_data[]>([]);
 
 // 搜索框
+// 所属模块
+const search_module = ref<string>("")
+// 所属模块下拉选项
+const module_options = ref<{label: string; value: string}[]>([])
 const search_test_case_id = ref<number | undefined>();
 const search_case_title = ref<string>("")
 const search_requirement_id = ref<number | undefined>();
@@ -420,6 +432,19 @@ const columns = ref<TableProps['columns']>([
   { colKey: 'operation', title: '操作', width: 160 }
 ]);
 
+// 获取模块列表
+const fetch_modules_list = async () => {
+  request.get(API_URLS.functional_test_case.modules)
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000"){
+          module_options.value = res.data.data.module.map((item: any) => ({
+            label: `${item.module} (${item.count})`,
+            value: item.module
+          }))
+        }
+      })
+}
+
 // 刷新测试用例列表
 const refresh_test_case_list = async () => {
   const params: any = {
@@ -456,13 +481,21 @@ const refresh_test_case_list = async () => {
       })
 }
 
-refresh_test_case_list()
+const refresh_all_data = () => {
+  fetch_modules_list()
+  refresh_test_case_list()
+}
+
+refresh_all_data()
 
 // 点击搜索按钮
 const handle_click_search_button = () => {
   const params: any = {
     page: pagination.value?.current || 1,
     page_size: pagination.value?.pageSize || 20,
+  }
+  if (search_module.value != "") {
+    params.module = search_module.value
   }
   if (search_test_case_id.value != undefined) {
     params.test_case_id = search_test_case_id.value;
@@ -515,6 +548,7 @@ const handle_click_search_button = () => {
 
 // 点击重置按钮
 const handle_click_reset_button = () => {
+  search_module.value = "";
   search_test_case_id.value = undefined;
   search_case_title.value = ""
   search_requirement_id.value = undefined

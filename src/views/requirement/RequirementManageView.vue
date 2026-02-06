@@ -36,6 +36,14 @@
             <form class="filter-actions-container"
                   @submit.prevent="handle_click_search_button"
             >
+              <t-select
+                  class="search-select"
+                  v-model="search_module"
+                  :options="module_options"
+                  placeholder="选择所属模块"
+                  clearable
+                  size="medium"
+              />
               <t-input
                   class="search-input"
                   v-model="search_requirement_id"
@@ -83,19 +91,6 @@
                   size="medium"
                   placeholder="全部状态"
               />
-
-              <t-input
-                  class="search-input"
-                  v-model="search_module"
-                  placeholder="输入模块"
-                  clearable
-                  size="medium"
-                  type="search"
-              >
-                <template #prefix-icon>
-                  <t-icon name="search"/>
-                </template>
-              </t-input>
 
               <t-button
                   class="search-button"
@@ -151,6 +146,11 @@
                   lazy-load
                   @select-change="handle_select_change"
               >
+                <template #module="{ row }">
+                  <t-tag v-if="row.module" :theme="'primary'" variant="light">
+                    {{ row.module }}
+                  </t-tag>
+                </template>
                 <template #requirement_content="{ row }">
                   <t-link theme="primary"
                           hover="color"
@@ -229,7 +229,7 @@
             <update-requirement-dialog
                 v-model:visible="show_update_dialog"
                 :requirement_data="updated_requirement_data"
-                @success="refresh_requirement_list"
+                @success="refresh_all_data"
             ></update-requirement-dialog>
           </div>
 
@@ -321,6 +321,8 @@ const search_status = ref<number | undefined>();
 
 // 搜索框-模块
 const search_module = ref<string>("");
+// 所属模块下拉选项
+const module_options = ref<{label: string; value: string}[]>([])
 
 // 存储正在操作的行 id
 const loading_row = ref<Set<number>>(new Set());
@@ -377,6 +379,21 @@ const columns = ref<TableProps['columns']>([
   { colKey: 'operation', title: '操作', width: 200 }
 ]);
 
+// 获取模块列表
+const fetch_modules_list = async () => {
+  request.get(API_URLS.requirement.modules)
+      .then((res) => {
+        console.log(res)
+        if (res.status === 200 && res.data.code === "000000"){
+          module_options.value = res.data.data.module.map((item: any) => ({
+            label: `${item.module} (${item.count})`,
+            value: item.module
+          }))
+          console.log(module_options.value)
+        }
+      })
+}
+
 // 刷新需求项列表
 const refresh_requirement_list = async () => {
   const params: any = {
@@ -409,7 +426,13 @@ const refresh_requirement_list = async () => {
       })
 }
 
-refresh_requirement_list()
+const refresh_all_data = () => {
+  // 获取模块列表
+  fetch_modules_list()
+  refresh_requirement_list()
+}
+
+refresh_all_data()
 
 // 点击搜索按钮
 const handle_click_search_button = () => {

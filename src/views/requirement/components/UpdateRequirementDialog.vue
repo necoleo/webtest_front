@@ -50,12 +50,15 @@
           label="所属模块"
           name="module"
       >
-        <t-input
+        <t-select
             v-model="form_data.module"
-            placeholder="请输入所属模块"
-            :maxlength="100"
-        >
-        </t-input>
+            :options="module_options"
+            placeholder="选择或输入模块"
+            filterable
+            creatable
+            clearable
+            @create="handle_create_module"
+        />
       </t-form-item>
 
       <!-- 需求内容-可编辑 -->
@@ -133,6 +136,17 @@ const form_data = ref({
   status: null as number | null,
 })
 
+// 所属模块下拉选项
+const module_options = ref<{label: string; value: string}[]>([])
+const handle_create_module = (value: string) => {
+  // 将新模块添加到选项列表并自动选中
+  module_options.value.push({
+    label: value,
+    value: value
+  })
+  form_data.value.module = value
+}
+
 // 需求项状态map
 const status_map: Record<number, string> = {
   0: '待审核',
@@ -179,7 +193,18 @@ const handle_close = () => {
   // 通知父组件关闭
   emit('update:visible', false)
 }
-
+// 获取模块列表
+const fetch_modules_list = async () => {
+  request.get(API_URLS.requirement.modules)
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000"){
+          module_options.value = res.data.data.module.map((item: any) => ({
+            label: `${item.module} (${item.count})`,
+            value: item.module
+          }))
+        }
+      })
+}
 // 确认更新
 const handle_confirm = async () => {
   // 参数校验
@@ -233,6 +258,7 @@ const handle_confirm = async () => {
 // 监听弹窗打开, 初始化数据
 watch(() => props.visible, (val) => {
   if (val){
+    fetch_modules_list()
     if (props.requirement_data){
       form_data.value = {
         requirement_id: props.requirement_data.requirement_id || null,

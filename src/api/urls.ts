@@ -26,6 +26,7 @@ interface ApiUrls{
         update: string;
         delete: string;
         audit: string;
+        modules: string;
     },
     functional_test_case: {
         create: string;
@@ -34,6 +35,7 @@ interface ApiUrls{
         update: string;
         delete: string;
         generate: string;
+        modules: string;
     },
     api_document: {
         upload: string;
@@ -96,6 +98,7 @@ export const API_URLS: ApiUrls = {
         update: 'api/requirement/update/',
         delete: 'api/requirement/delete/',
         audit: 'api/requirement/audit/',
+        modules: 'api/requirement/modules/',
     },
     functional_test_case: {
         create: 'api/functional_test_case/create/',
@@ -104,6 +107,7 @@ export const API_URLS: ApiUrls = {
         update: 'api/functional_test_case/update/',
         delete: 'api/functional_test_case/delete/',
         generate: 'api/functional_test_case/generate/',
+        modules: "api/functional_test_case/modules/",
     },
     api_document: {
         upload: 'api/api_document/upload/',

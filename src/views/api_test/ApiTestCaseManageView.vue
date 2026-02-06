@@ -162,12 +162,12 @@
             </div>
             <upload-api-test-case-dialog
                 v-model:visible="show_upload_dialog"
-                @success="refresh_test_case_list"
+                @success="refresh_all_data"
             ></upload-api-test-case-dialog>
             <execute-api-test-case-dialog
                 v-model:visible="show_execute_dialog"
                 :test_case="selected_test_case"
-                @success="refresh_test_case_list"
+                @success="refresh_all_data"
             ></execute-api-test-case-dialog>
           </div>
         </t-content>
@@ -216,7 +216,7 @@ const search_project_id = ref<number | undefined>();
 // 所属模块
 const search_module = ref<string>("")
 // 所属模块下拉选项
-const module_options = ref<{label: string; value: number}[]>([])
+const module_options = ref<{label: string; value: string}[]>([])
 
 // hover 效果
 const hover = ref<boolean>(true);
@@ -315,13 +315,11 @@ const handle_click_reset_button = () => {
 const fetch_modules_list = async () => {
   request.get(API_URLS.api_test_case.modules)
       .then((res) => {
-        console.log(res)
         if (res.status === 200 && res.data.code === "000000"){
           module_options.value = res.data.data.module.map((item: any) => ({
             label: `${item.module} (${item.count})`,
             value: item.module
           }))
-          console.log(module_options.value)
         }
       })
 }
@@ -332,7 +330,6 @@ const refresh_test_case_list = async () => {
       .then((res) => {
         if (res.status === 200 && res.data.code === "000000") {
           test_case_data.value = res.data.data.results;
-          console.log(test_case_data.value);
           total.value = res.data.data.total_count;
           if (pagination.value) {
             pagination.value.total = total.value;
@@ -341,10 +338,14 @@ const refresh_test_case_list = async () => {
       })
 }
 
-// 获取模块列表
-fetch_modules_list()
+const refresh_all_data = () => {
+  // 获取模块列表
+  fetch_modules_list()
 // 进来先刷新列表
-refresh_test_case_list()
+  refresh_test_case_list()
+}
+
+refresh_all_data()
 
 
 // 搜索

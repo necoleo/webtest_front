@@ -52,10 +52,14 @@
           label="所属模块"
           name="module"
       >
-        <t-input
+        <t-select
             v-model="form_data.module"
-            placeholder="请输入所属模块（可选）"
-            :maxlength="100"
+            :options="module_options"
+            placeholder="选择或输入模块"
+            filterable
+            creatable
+            clearable
+            @create="handle_create_module"
         />
       </t-form-item>
 
@@ -159,6 +163,19 @@ const emit = defineEmits(['update:visible', 'success'])
 
 const loading = ref(false)
 
+// 所属模块下拉选项
+const module_options = ref<{label: string; value: string}[]>([])
+const handle_create_module = (value: string) => {
+  // 将新模块添加到选项列表并自动选中
+  module_options.value.push(
+      {
+        label: value,
+        value: value
+      }
+  )
+  form_data.value.module = value
+}
+
 // 表单信息
 const form_data = ref({
   test_case_id: null as number | null,
@@ -194,6 +211,19 @@ const handle_close = () => {
     comment: "",
   }
   emit('update:visible', false)
+}
+
+// 获取模块列表
+const fetch_modules_list = async () => {
+  request.get(API_URLS.functional_test_case.modules)
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000"){
+          module_options.value = res.data.data.module.map((item: any) => ({
+            label: `${item.module} (${item.count})`,
+            value: item.module
+          }))
+        }
+      })
 }
 
 // 确认更新
@@ -250,6 +280,7 @@ const handle_confirm = async () => {
 // 监听弹窗打开
 watch(() => props.visible, (val) => {
   if (val){
+    fetch_modules_list()
     if (props.test_case_data){
       form_data.value = {
         test_case_id: props.test_case_data.test_case_id || null,
