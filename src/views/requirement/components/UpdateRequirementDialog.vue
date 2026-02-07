@@ -25,10 +25,10 @@
       <!-- 所属文档ID-只读 -->
       <t-form-item
           label="所属文档ID"
-          name="requirement_document_id"
+          name="requirement_document_name"
       >
         <t-input
-            v-model="form_data.requirement_document_id"
+            v-model="form_data.requirement_document_name"
             :disabled="true"
         />
       </t-form-item>
@@ -103,6 +103,7 @@ interface requirement_data {
   requirement_id: number;
   project_id: number;
   requirement_document_id: number;
+  requirement_document_name: string;
   requirement_title: string;
   requirement_content: string;
   module: string;
@@ -132,7 +133,7 @@ const form_data = ref({
 
   // 只读字段
   requirement_id: null as number | null,
-  requirement_document_id: null as number | null,
+  requirement_document_name: "",
   status: null as number | null,
 })
 
@@ -186,7 +187,7 @@ const handle_close = () => {
     module: "",
 
     requirement_id: null,
-    requirement_document_id: null,
+    requirement_document_name: "",
     status: null,
   }
 
@@ -262,7 +263,7 @@ watch(() => props.visible, (val) => {
     if (props.requirement_data){
       form_data.value = {
         requirement_id: props.requirement_data.requirement_id || null,
-        requirement_document_id: props.requirement_data.requirement_document_id || null,
+        requirement_document_name: props.requirement_data.requirement_document_name || "",
         requirement_title: props.requirement_data.requirement_title || "",
         requirement_content: props.requirement_data.requirement_content || "",
         module: props.requirement_data.module || "",

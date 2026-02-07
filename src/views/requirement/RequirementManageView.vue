@@ -57,31 +57,14 @@
                 </template>
               </t-input>
 
-              <t-input
-                  class="search-input"
-                  v-model="search_requirement_title"
-                  placeholder="输入需求标题"
+              <t-select
+                  class="search-select"
+                  v-model="search_requirement_document"
+                  :options="requirement_document_options"
+                  placeholder="选择所属需求文档"
                   clearable
                   size="medium"
-                  type="search"
-              >
-                <template #prefix-icon>
-                  <t-icon name="search"/>
-                </template>
-              </t-input>
-
-              <t-input
-                  class="search-input"
-                  v-model="search_requirement_document_id"
-                  placeholder="输入所属文档id"
-                  clearable
-                  size="medium"
-                  type="number"
-              >
-                <template #prefix-icon>
-                  <t-icon name="search"/>
-                </template>
-              </t-input>
+              />
 
               <t-select
                   class="search-select"
@@ -259,6 +242,7 @@ interface requirement_data {
   requirement_id: number;
   project_id: number;
   requirement_document_id: number;
+  requirement_document_name: string;
   requirement_title: string;
   requirement_content: string;
   module: string;
@@ -314,7 +298,8 @@ const search_requirement_id = ref<number | undefined>();
 const search_requirement_title = ref<string>("")
 
 // 搜索框-所属需求文档id
-const search_requirement_document_id = ref<number | undefined>();
+const search_requirement_document = ref<number | undefined>();
+const requirement_document_options = ref<{label: string; value: number}[]>([])
 
 // 搜索框-需求项状态
 const search_status = ref<number | undefined>();
@@ -371,7 +356,7 @@ const columns = ref<TableProps['columns']>([
   { colKey: 'requirement_id', title: '需求项id', width: 100 },
   { colKey: 'requirement_title', title: '需求标题', ellipsis: true },
   { colKey: 'requirement_content', title: '需求内容', ellipsis: true },
-  { colKey: 'requirement_document_id', title: '所属文档', width: 100 },
+  { colKey: 'requirement_document_name', title: '所属文档', width: 100 },
   { colKey: 'module', title: '模块', width: 100 },
   { colKey: 'status', title: '状态', width: 120 },
   { colKey: 'is_vectorized', title: '已向量化', width: 100 },
@@ -390,6 +375,20 @@ const fetch_modules_list = async () => {
             value: item.module
           }))
           console.log(module_options.value)
+        }
+      })
+}
+
+// 获取需求文档列表
+const fetch_requirement_document_options = () => {
+  request.get(API_URLS.requirements_document.options, {params: {source: "requirement"}})
+      .then((res) => {
+        console.log(res)
+        if (res.status === 200 && res.data.code === "000000"){
+          requirement_document_options.value = res.data.data.requirement_document.map((item: any) => ({
+            label: `${item.requirement_document_name} (${item.count})`,
+            value: item.requirement_document_id
+          }))
         }
       })
 }
@@ -429,6 +428,7 @@ const refresh_requirement_list = async () => {
 const refresh_all_data = () => {
   // 获取模块列表
   fetch_modules_list()
+  fetch_requirement_document_options()
   refresh_requirement_list()
 }
 
@@ -446,8 +446,8 @@ const handle_click_search_button = () => {
   if (search_requirement_title.value != "") {
     params.requirement_title = search_requirement_title.value;
   }
-  if (search_requirement_document_id.value != undefined) {
-    params.requirement_document_id = search_requirement_document_id.value;
+  if (search_requirement_document.value != undefined) {
+    params.requirement_document_id = search_requirement_document.value;
   }
   if (search_status.value != undefined) {
     params.status = search_status.value;
@@ -465,6 +465,7 @@ const handle_click_search_button = () => {
               requirement_id: item.id,
               project_id: item.project_id,
               requirement_document_id: item.requirement_document_id,
+              requirement_document_name: item.requirement_document_name,
               requirement_title: item.requirement_title,
               requirement_content: item.requirement_content,
               module: item.module,
@@ -486,7 +487,7 @@ const handle_click_search_button = () => {
 const handle_click_reset_button = () => {
   search_requirement_id.value = undefined;
   search_requirement_title.value = ""
-  search_requirement_document_id.value = undefined
+  search_requirement_document.value = undefined
   search_status.value = undefined;
   search_module.value = ""
   pagination.value!.current = 1

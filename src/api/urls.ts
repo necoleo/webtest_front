@@ -19,6 +19,7 @@ interface ApiUrls{
         update: string;
         delete: string;
         parse: string;
+        options: string;
     },
     requirement: {
         list: string;
@@ -90,7 +91,8 @@ export const API_URLS: ApiUrls = {
         list: 'api/requirement_document/list/',
         update: 'api/requirement_document/update/',
         delete: 'api/requirement_document/delete/',
-        parse: 'api/requirement_document/parse/'
+        parse: 'api/requirement_document/parse/',
+        options: 'api/requirement_document/options/',
     },
     requirement: {
         list: 'api/requirement/list/',

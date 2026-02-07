@@ -28,7 +28,7 @@
           {{ form_data.project_id }}
         </t-descriptions-item>
         <t-descriptions-item label="所属文档ID">
-          {{ form_data.requirement_document_id }}
+          {{ form_data.requirement_document_name }}
         </t-descriptions-item>
         <t-descriptions-item label="所属模块">
           {{ form_data.module || '-' }}
@@ -63,6 +63,7 @@ interface requirement_data {
   requirement_id: number;
   project_id: number;
   requirement_document_id: number;
+  requirement_document_name: string;
   requirement_title: string;
   requirement_content: string;
   module: string;
@@ -86,6 +87,7 @@ const form_data = ref({
   requirement_id: null as number | null,
   project_id: null as number | null,
   requirement_document_id: null as number | null,
+  requirement_document_name: "",
   requirement_title: "",
   requirement_content: "",
   module: "",
@@ -132,6 +134,7 @@ const handle_close = () => {
     requirement_id: null,
     project_id: null,
     requirement_document_id: null,
+    requirement_document_name: "",
     requirement_title: "",
     requirement_content: "",
     module: "",
@@ -153,6 +156,7 @@ watch(() => props.visible, (val) => {
         requirement_id: props.requirement_data.requirement_id || null,
         project_id: props.requirement_data.project_id || null,
         requirement_document_id: props.requirement_data.requirement_document_id || null,
+        requirement_document_name: props.requirement_data.requirement_document_name || "",
         requirement_title: props.requirement_data.requirement_title || "",
         requirement_content: props.requirement_data.requirement_content || "",
         module: props.requirement_data.module || "",
