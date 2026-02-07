@@ -19,6 +19,9 @@
         <t-descriptions-item label="关联需求ID">
           {{ form_data.requirement_id }}
         </t-descriptions-item>
+        <t-descriptions-item label="所属需求文档" :span="2">
+          {{ form_data.requirement_document_name || '-' }}
+        </t-descriptions-item>
         <t-descriptions-item label="用例标题" :span="2">
           {{ form_data.case_title || '-' }}
         </t-descriptions-item>
@@ -91,6 +94,8 @@ interface test_case_data {
   test_case_id: number;
   project_id: number;
   requirement_id: number;
+  requirement_document_id: number;
+  requirement_document_name: string;
   case_title: string;
   precondition: string;
   test_steps: string;
@@ -118,6 +123,8 @@ const form_data = ref({
   test_case_id: null as number | null,
   project_id: null as number | null,
   requirement_id: null as number | null,
+  requirement_document_id: null as number | null,
+  requirement_document_name: "",
   case_title: "",
   precondition: "",
   test_steps: "",
@@ -204,6 +211,8 @@ const handle_close = () => {
     test_case_id: null,
     project_id: null,
     requirement_id: null,
+    requirement_document_id: null,
+    requirement_document_name: "",
     case_title: "",
     precondition: "",
     test_steps: "",
@@ -227,6 +236,8 @@ watch(() => props.visible, (val) => {
         test_case_id: props.test_case_data.test_case_id || null,
         project_id: props.test_case_data.project_id || null,
         requirement_id: props.test_case_data.requirement_id || null,
+        requirement_document_id: props.test_case_data.requirement_document_id || null,
+        requirement_document_name: props.test_case_data.requirement_document_name || "",
         case_title: props.test_case_data.case_title || "",
         precondition: props.test_case_data.precondition || "",
         test_steps: props.test_case_data.test_steps || "",

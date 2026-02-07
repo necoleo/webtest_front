@@ -86,6 +86,15 @@
 
               <t-select
                   class="search-select"
+                  v-model="search_requirement_document"
+                  :options="requirement_document_options"
+                  placeholder="选择所属需求文档"
+                  clearable
+                  size="medium"
+              />
+
+              <t-select
+                  class="search-select"
                   v-model="search_priority"
                   :options="priority_options"
                   clearable
@@ -272,6 +281,8 @@ interface test_case_data {
   test_case_id: number;
   project_id: number;
   requirement_id: number;
+  requirement_document_id: number;
+  requirement_document_name: string;
   case_title: string;
   precondition: string;
   test_steps: string;
@@ -363,6 +374,9 @@ const module_options = ref<{label: string; value: string}[]>([])
 const search_test_case_id = ref<number | undefined>();
 const search_case_title = ref<string>("")
 const search_requirement_id = ref<number | undefined>();
+// 搜索框-所属需求文档id
+const search_requirement_document = ref<number | undefined>();
+const requirement_document_options = ref<{label: string; value: number}[]>([])
 const search_priority = ref<number | undefined>();
 const search_case_source = ref<number | undefined>();
 const search_execution_status = ref<number | undefined>();
@@ -424,6 +438,7 @@ const columns = ref<TableProps['columns']>([
   { colKey: 'test_case_id', title: '用例id', width: 80 },
   { colKey: 'case_title', title: '用例标题', ellipsis: true },
   { colKey: 'requirement_id', title: '关联需求', width: 100 },
+  { colKey: 'requirement_document_name', title: '所属文档', width: 100 },
   { colKey: 'module', title: '模块', width: 100 },
   { colKey: 'priority', title: '优先级', width: 100 },
   { colKey: 'case_source', title: '来源', width: 100 },
@@ -446,6 +461,19 @@ const fetch_modules_list = async () => {
       })
 }
 
+// 获取需求文档列表
+const fetch_requirement_document_options = () => {
+  request.get(API_URLS.requirements_document.options, {params: {source: "test_case"}})
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000"){
+          requirement_document_options.value = res.data.data.requirement_document.map((item: any) => ({
+            label: `${item.requirement_document_name} (${item.count})`,
+            value: item.requirement_document_id
+          }))
+        }
+      })
+}
+
 // 刷新测试用例列表
 const refresh_test_case_list = async () => {
   const params: any = {
@@ -461,6 +489,8 @@ const refresh_test_case_list = async () => {
               test_case_id: item.id,
               project_id: item.project_id,
               requirement_id: item.requirement_id,
+              requirement_document_id: item.requirement_document_id,
+              requirement_document_name: item.requirement_document_name,
               case_title: item.case_title,
               precondition: item.precondition,
               test_steps: item.test_steps,
@@ -484,6 +514,7 @@ const refresh_test_case_list = async () => {
 
 const refresh_all_data = () => {
   fetch_modules_list()
+  fetch_requirement_document_options()
   refresh_test_case_list()
 }
 
@@ -507,6 +538,9 @@ const handle_click_search_button = () => {
   if (search_requirement_id.value != undefined) {
     params.requirement_id = search_requirement_id.value;
   }
+  if (search_requirement_document.value != undefined) {
+    params.requirement_document_id = search_requirement_document.value;
+  }
   if (search_priority.value != undefined) {
     params.priority = search_priority.value;
   }
@@ -526,6 +560,8 @@ const handle_click_search_button = () => {
               test_case_id: item.id,
               project_id: item.project_id,
               requirement_id: item.requirement_id,
+              requirement_document_id: item.requirement_document_id,
+              requirement_document_name: item.requirement_document_name,
               case_title: item.case_title,
               precondition: item.precondition,
               test_steps: item.test_steps,
@@ -553,6 +589,7 @@ const handle_click_reset_button = () => {
   search_test_case_id.value = undefined;
   search_case_title.value = ""
   search_requirement_id.value = undefined
+  search_requirement_document.value = undefined
   search_priority.value = undefined;
   search_case_source.value = undefined;
   search_execution_status.value = undefined;

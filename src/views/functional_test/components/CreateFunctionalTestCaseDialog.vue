@@ -1,16 +1,19 @@
 <template>
-  <t-dialog
-      width="700px"
+  <t-drawer
+      size="850px"
       :visible="props.visible"
       header="新建测试用例"
-      :loading = "loading"
+      placement="right"
       :on-close="handle_close"
+      :confirm-btn="{ content: '创建', theme: 'primary', loading: loading }"
+      cancel-btn="取消"
       :on-confirm="handle_confirm"
   >
     <t-form
         ref="form"
         :data="form_data"
     >
+      <!-- 所属项目 -->
       <t-form-item
           label="所属项目"
           name="project_id"
@@ -23,6 +26,21 @@
         />
       </t-form-item>
 
+      <!-- 所属需求文档 -->
+      <t-form-item
+          label="所属需求文档"
+          name="requirement_document_id"
+      >
+        <t-select
+            v-model="form_data.requirement_document_id"
+            :options="requirement_document_options"
+            placeholder="请选择所属需求文档"
+            clearable
+            filterable
+        />
+      </t-form-item>
+
+      <!-- 关联需求 -->
       <t-form-item
           label="关联需求"
           name="requirement_id"
@@ -36,6 +54,7 @@
         />
       </t-form-item>
 
+      <!-- 用例标题 -->
       <t-form-item
           label="用例标题"
           name="case_title"
@@ -47,6 +66,7 @@
         />
       </t-form-item>
 
+      <!-- 所属模块 -->
       <t-form-item
           label="所属模块"
           name="module"
@@ -62,6 +82,7 @@
         />
       </t-form-item>
 
+      <!-- 优先级 -->
       <t-form-item
           label="优先级"
           name="priority"
@@ -73,6 +94,7 @@
         />
       </t-form-item>
 
+      <!-- 前置条件 -->
       <t-form-item
           label="前置条件"
           name="precondition"
@@ -80,10 +102,11 @@
         <t-textarea
             v-model="form_data.precondition"
             placeholder="请输入前置条件（可选）"
-            :autosize="{ minRows: 2, maxRows: 4}"
+            :autosize="{ minRows: 2, maxRows: 6}"
         />
       </t-form-item>
 
+      <!-- 测试步骤 -->
       <t-form-item
           label="测试步骤"
           name="test_steps"
@@ -95,6 +118,7 @@
         />
       </t-form-item>
 
+      <!-- 预期结果 -->
       <t-form-item
           label="预期结果"
           name="expected_result"
@@ -102,10 +126,11 @@
         <t-textarea
             v-model="form_data.expected_result"
             placeholder="请输入预期结果"
-            :autosize="{ minRows: 2, maxRows: 4}"
+            :autosize="{ minRows: 2, maxRows: 6}"
         />
       </t-form-item>
 
+      <!-- 备注 -->
       <t-form-item
           label="备注"
           name="comment"
@@ -118,7 +143,7 @@
       </t-form-item>
 
     </t-form>
-  </t-dialog>
+  </t-drawer>
 </template>
 
 <script setup lang="ts">
@@ -141,6 +166,7 @@ const loading = ref(false)
 // 表单信息
 const form_data = ref({
   project_id: null as number | null,
+  requirement_document_id: null as number | null,
   requirement_id: null as number | null,
   case_title: "",
   module: "",
@@ -153,6 +179,9 @@ const form_data = ref({
 
 // 项目下拉选项
 const project_options = ref<{label: string; value: number}[]>([])
+
+// 需求文档下拉选项
+const requirement_document_options = ref<{label: string; value: number}[]>([])
 
 // 需求下拉选项
 const requirement_options = ref<{label: string; value: number}[]>([])
@@ -180,6 +209,7 @@ const priority_options = [
 const handle_close = () => {
   form_data.value = {
     project_id: null,
+    requirement_document_id: null,
     requirement_id: null,
     case_title: "",
     module: "",
@@ -197,6 +227,10 @@ const handle_confirm = async () => {
   // 参数校验
   if (!form_data.value.project_id) {
     MessagePlugin.warning("请选择所属项目")
+    return
+  }
+  if (!form_data.value.requirement_document_id) {
+    MessagePlugin.warning("请选择所属需求文档")
     return
   }
   if (!form_data.value.requirement_id) {
@@ -219,6 +253,7 @@ const handle_confirm = async () => {
   loading.value = true
   const create_data = {
     project_id: form_data.value.project_id,
+    requirement_document_id: form_data.value.requirement_document_id,
     requirement_id: form_data.value.requirement_id,
     case_title: form_data.value.case_title.trim(),
     module: form_data.value.module?.trim() || null,
@@ -262,6 +297,19 @@ const fetch_project_list = async () => {
       })
 }
 
+// 获取需求文档列表
+const fetch_requirement_document_options = () => {
+  request.get(API_URLS.requirements_document.options, {params: {source: "requirement"}})
+      .then((res) => {
+        if (res.status === 200 && res.data.code === "000000"){
+          requirement_document_options.value = res.data.data.requirement_document.map((item: any) => ({
+            label: `${item.requirement_document_name} (${item.count})`,
+            value: item.requirement_document_id
+          }))
+        }
+      })
+}
+
 // 获取需求列表（已审核的需求）
 const fetch_requirement_list = async () => {
   const params = {
@@ -296,6 +344,7 @@ const fetch_modules_list = async () => {
 watch(() => props.visible, (val) => {
   if (val){
     fetch_project_list()
+    fetch_requirement_document_options()
     fetch_requirement_list()
     fetch_modules_list()
   }
@@ -321,3 +370,4 @@ watch(() => props.visible, (val) => {
   height: 40px;
 }
 </style>
+

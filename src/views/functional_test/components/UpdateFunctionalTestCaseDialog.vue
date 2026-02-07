@@ -24,6 +24,17 @@
         />
       </t-form-item>
 
+      <!-- 所属需求文档-只读 -->
+      <t-form-item
+          label="所属需求文档"
+          name="requirement_document_name"
+      >
+        <t-input
+            v-model="form_data.requirement_document_name"
+            :disabled="true"
+        />
+      </t-form-item>
+
       <!-- 关联需求-只读 -->
       <t-form-item
           label="关联需求"
@@ -139,6 +150,8 @@ interface test_case_data {
   test_case_id: number;
   project_id: number;
   requirement_id: number;
+  requirement_document_id: number;
+  requirement_document_name: string;
   case_title: string;
   precondition: string;
   test_steps: string;
@@ -179,6 +192,7 @@ const handle_create_module = (value: string) => {
 // 表单信息
 const form_data = ref({
   test_case_id: null as number | null,
+  requirement_document_name: "",
   requirement_id: null as number | null,
   case_title: "",
   module: "",
@@ -201,6 +215,7 @@ const priority_options = [
 const handle_close = () => {
   form_data.value = {
     test_case_id: null,
+    requirement_document_name: "",
     requirement_id: null,
     case_title: "",
     module: "",
@@ -284,6 +299,7 @@ watch(() => props.visible, (val) => {
     if (props.test_case_data){
       form_data.value = {
         test_case_id: props.test_case_data.test_case_id || null,
+        requirement_document_name: props.test_case_data.requirement_document_name || "",
         requirement_id: props.test_case_data.requirement_id || null,
         case_title: props.test_case_data.case_title || "",
         module: props.test_case_data.module || "",
